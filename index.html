@@ -604,9 +604,10 @@ function init(){
   });
   updateUI();
   if(!fromURL) saveState(); // URL에서 불러왔으면 localStorage도 갱신
-  switchTab('1');
+  // 전체 조망을 먼저 (애니메이션 없이) 잡은 뒤 Day 1 경로로 이동 — fitBounds 경합 방지
   const all=[...spots.map(s=>[s.lat,s.lng]),...hotels.map(h=>[h.lat,h.lng]),[gp.lat,gp.lng]];
-  map.fitBounds(all,{padding:[30,30]});
+  map.fitBounds(all,{padding:[30,30],animate:false});
+  switchTab('1');
 }
 init();
 </script>
