@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="no-referrer">
-<title>홍콩 여행 플래너</title>
+<title>홍콩·마카오 여행 플래너</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -95,7 +95,7 @@
 
 <div id="sidebar">
   <div class="sidebar-header">
-    <h2>홍콩 여행 플래너</h2>
+    <h2>홍콩·마카오 여행 플래너</h2>
     <p>후보지 → Day로 드래그 · 사진 클릭 시 확대 · Day 탭 클릭 시 경로</p>
   </div>
 
@@ -110,10 +110,10 @@
   </div>
 
   <div class="day-tabs">
-    <div class="day-tab active" data-day="1" onclick="switchTab('1')"><span>Day 1</span><span class="dd">1일차</span></div>
-    <div class="day-tab" data-day="2" onclick="switchTab('2')"><span>Day 2</span><span class="dd">2일차</span></div>
-    <div class="day-tab" data-day="3" onclick="switchTab('3')"><span>Day 3</span><span class="dd">3일차</span></div>
-    <div class="day-tab" data-day="4" onclick="switchTab('4')"><span>Day 4</span><span class="dd">4일차</span></div>
+    <div class="day-tab active" data-day="1" onclick="switchTab('1')"><span>Day 1</span><span class="dd">홍콩</span></div>
+    <div class="day-tab" data-day="2" onclick="switchTab('2')"><span>Day 2</span><span class="dd">홍콩</span></div>
+    <div class="day-tab" data-day="3" onclick="switchTab('3')"><span>Day 3</span><span class="dd">마카오</span></div>
+    <div class="day-tab" data-day="4" onclick="switchTab('4')"><span>Day 4</span><span class="dd">마카오</span></div>
   </div>
 
   <div id="day-area">
@@ -126,11 +126,11 @@
       <div class="drop-zone" id="drop-2"></div>
     </div>
     <div id="day-panel-3" class="day-panel" style="display:none;">
-      <div class="day-label">Day 3 일정 <span class="hotel-badge">🏨 침사추이 숙소</span></div>
+      <div class="day-label">Day 3 일정 <span class="hotel-badge">⛴ 홍콩→마카오 · 🏨 마카오 숙소</span></div>
       <div class="drop-zone" id="drop-3"></div>
     </div>
     <div id="day-panel-4" class="day-panel" style="display:none;">
-      <div class="day-label">Day 4 일정 <span class="hotel-badge">🏨 침사추이 → 공항</span></div>
+      <div class="day-label">Day 4 일정 <span class="hotel-badge">🏨 마카오 → 공항</span></div>
       <div class="drop-zone" id="drop-4"></div>
     </div>
   </div>
@@ -141,6 +141,7 @@
       <div class="li"><div class="ld" style="background:#3498db;"></div>구룡 (침사추이/몽콕)</div>
       <div class="li"><div class="ld" style="background:#27ae60;"></div>근교/반나절</div>
       <div class="li"><div class="ld" style="background:#8e44ad;"></div>야간/나이트</div>
+      <div class="li"><div class="ld" style="background:#16a085;"></div>마카오</div>
       <div class="li"><span class="must-badge">MUST</span> 필수</div>
       <div class="li"><div class="ld" style="background:#e2231a;"></div>MTR 췬완선</div>
       <div class="li"><div class="ld" style="background:#0860a8;"></div>아일랜드선</div>
@@ -266,22 +267,76 @@ const spots = [
   { id:25, name:"웡타이신 사원", lat:22.3427, lng:114.1935, color:"#27ae60", must:false,
     desc:"소원 잘 들어주기로 유명한 도교 사원. 점술 거리 구경도 재미",
     tags:["MTR웡타이신","사원","아이★★"], img:null },
+
+  // ── 마카오 (반도) ──
+  { id:27, name:"세나도 광장", lat:22.1934, lng:113.5398, color:"#16a085", must:true,
+    desc:"물결무늬 포르투갈 타일 바닥의 세계문화유산 광장. 마카오 구시가 중심",
+    tags:["도보","유산","아이★★★"],
+    img:F("Senado Square, Macau - 20101117.jpg") },
+  { id:28, name:"성 바울 성당 유적", lat:22.1975, lng:113.5410, color:"#16a085", must:true,
+    desc:"마카오의 상징! 파사드만 남은 성당 유적. 세나도 광장에서 도보 8분, 육포거리 경유",
+    tags:["도보","유산","아이★★★"],
+    img:F("Ruins of St. Paul's.jpg") },
+  { id:29, name:"몬테 요새", lat:22.1970, lng:113.5432, color:"#16a085", must:false,
+    desc:"성 바울 유적 바로 옆 언덕 요새. 대포+마카오 시내 전망. 무료",
+    tags:["도보","전망","아이★★★"],
+    img:F("Fortaleza del Monte, Macao, 2013-08-08, DD 01.jpg") },
+  { id:30, name:"기아 요새 & 등대", lat:22.1972, lng:113.5497, color:"#16a085", must:false,
+    desc:"마카오 최고(最高)점. 케이블카로 올라가는 등대+요새. 전망 좋음",
+    tags:["케이블카","전망","아이★★★"],
+    img:F("Guia Lighthouse.jpg") },
+  { id:31, name:"아마 사원", lat:22.1866, lng:113.5313, color:"#16a085", must:false,
+    desc:"'마카오' 이름의 유래가 된 500년 사원. 바닷가 언덕의 도교 사원",
+    tags:["버스","사원","아이★★"],
+    img:F("A-Ma Temple (Macau) 01.JPG") },
+  { id:32, name:"펠리시다데 거리 (육포거리)", lat:22.1927, lng:113.5375, color:"#16a085", must:false,
+    desc:"붉은 창틀의 옛 거리. 육포/아몬드쿠키 시식 천국. 인디아나존스 촬영지",
+    tags:["도보","먹거리","아이★★★"],
+    img:F("\"Rua da Felicidade\" at night.jpg") },
+  { id:33, name:"그랜드 리스보아 야경", lat:22.1898, lng:113.5432, color:"#8e44ad", must:false,
+    desc:"연꽃 모양 황금 카지노 타워. 마카오 반도 야경의 중심. 밖에서 구경만도 충분",
+    tags:["저녁","야경","아이★★"],
+    img:F("Grand Lisboa.jpg") },
+  { id:34, name:"마카오 타워", lat:22.1796, lng:113.5369, color:"#16a085", must:false,
+    desc:"338m 타워. 세계 최고 높이 번지점프+스카이워크. 전망대만도 OK",
+    tags:["버스","전망대","아이★★★"],
+    img:F("Macau Tower.jpg") },
+
+  // ── 마카오 (타이파/코타이) ──
+  { id:35, name:"베네시안 마카오", lat:22.1454, lng:113.5636, color:"#16a085", must:true,
+    desc:"실내 베네치아 운하+곤돌라! 하늘 천장 아래 쇼핑몰. 무료 셔틀버스 활용",
+    tags:["무료셔틀","리조트","아이★★★★"],
+    img:F("The Venetian Macao.jpg") },
+  { id:36, name:"파리지앵 (에펠탑)", lat:22.1417, lng:113.5620, color:"#16a085", must:false,
+    desc:"절반 크기 에펠탑! 전망대 탑승 가능. 밤 조명이 예쁨. 베네시안 도보 5분",
+    tags:["도보","사진","아이★★★"],
+    img:F("The Parisian Macao.jpg") },
+  { id:37, name:"쿤하 거리 (타이파 빌리지)", lat:22.1538, lng:113.5578, color:"#16a085", must:true,
+    desc:"타이파 먹자골목. 에그타르트/육포/세라두라 등 마카오 간식 총집합",
+    tags:["도보","먹거리","아이★★★★"],
+    img:F("Rua do Cunha.jpg") },
+  { id:38, name:"콜로안 & 로드스토우 에그타르트", lat:22.1229, lng:113.5528, color:"#16a085", must:false,
+    desc:"에그타르트 원조 로드스토우 본점! 파스텔톤 어촌마을 산책. 버스 30분",
+    tags:["버스","먹거리","아이★★★"],
+    img:F("Coloane Village, Macau (2051971111).jpg") },
 ];
 
 const hotels = [
-  { name:"침사추이 숙소", lat:22.2980, lng:114.1720, emoji:"🏨", label:"숙소: 침사추이 (미정)", days:["1","2","3","4"] },
+  { name:"침사추이 숙소", lat:22.2980, lng:114.1720, emoji:"🏨", label:"숙소1: 침사추이 (Day 1~2, 미정)", days:["1","2"] },
+  { name:"마카오 숙소", lat:22.1480, lng:113.5590, emoji:"🏨", label:"숙소2: 마카오 코타이 (Day 3~4, 미정)", days:["3","4"] },
 ];
 const gp = { name:"빅토리아 하버", lat:22.2890, lng:114.1700, emoji:"⚓" };
 const dayColors = { "1":"#4a9eda", "2":"#e67e22", "3":"#9b59b6", "4":"#e74c3c" };
-const dayHotels = { "1":hotels[0], "2":hotels[0], "3":hotels[0], "4":hotels[0] };
+const dayHotels = { "1":hotels[0], "2":hotels[0], "3":hotels[1], "4":hotels[1] };
 
 // ─── State (localStorage 자동 저장/복원) ───
-const STORAGE_KEY = 'hongkong_planner_v1';
+const STORAGE_KEY = 'hkmo_planner_v1';
 const assignment = {};
 const dayOrder = { pool:[], "1":[], "2":[], "3":[], "4":[] };
 spots.forEach(s => assignment[s.id] = "pool");
 // 최초 기본값
 [9,2,1,10].forEach(id => assignment[id] = "1");
+[28,27,35].forEach(id => assignment[id] = "3");
 // localStorage 복원
 try {
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -354,6 +409,8 @@ const mtrLines = {
 };
 // 스타페리 항로 (점선)
 const ferryRoute = [ [22.2937,114.1685], [22.2870,114.1610] ];
+// 홍콩(성완 마카오페리터미널) ↔ 마카오(외항터미널) 페리 항로
+const macauFerryRoute = [ [22.2886,114.1521], [22.2650,114.0200], [22.2200,113.7500], [22.1917,113.5593] ];
 function drawTransit(){
   Object.values(mtrLines).forEach(line=>{
     const pts=line.stations.map(s=>[s.lat,s.lng]);
@@ -368,6 +425,10 @@ function drawTransit(){
   const fl=L.polyline(ferryRoute,{color:'#16a085',weight:4,opacity:.6,dashArray:'8 8'}).addTo(map);
   fl.bindTooltip('⛴ 스타페리 항로',{sticky:true,className:'transit-tip'});
   transitLines.push(fl);
+  // 홍콩↔마카오 페리 (점선)
+  const mf=L.polyline(macauFerryRoute,{color:'#e67e22',weight:4,opacity:.55,dashArray:'10 10'}).addTo(map);
+  mf.bindTooltip('⛴ 홍콩↔마카오 페리 (약 1시간, 터보젯/코타이젯)',{sticky:true,className:'transit-tip'});
+  transitLines.push(mf);
 }
 function toggleTransit(){
   transitVisible=!transitVisible;
