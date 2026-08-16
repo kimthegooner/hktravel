@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<title>홍콩 여행 플래너</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif; display:flex; height:100vh; background:#f0f2f5; }
+  #map { flex:1; min-width:0; }
+  #sidebar { width:440px; display:flex; flex-direction:column; background:#fff; border-left:1px solid #ddd; overflow:hidden; }
+  .sidebar-header { padding:12px 16px; border-bottom:1px solid #eee; }
+  .sidebar-header h2 { font-size:16px; color:#222; }
+  .sidebar-header p { font-size:11px; color:#999; margin-top:2px; }
+
+  /* Pool */
+  #pool-area { border-bottom:2px solid #e0e0e0; background:#f5f6f8; flex-shrink:0; transition:max-height .3s; overflow:hidden; }
+  #pool-area.collapsed { max-height:36px!important; }
+  .pool-header { padding:8px 14px; font-size:11px; font-weight:700; color:#888; display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; position:sticky; top:0; background:#f5f6f8; z-index:1; }
+  .pool-header:hover { background:#eee; }
+  .pool-header .cnt { background:#ccc; color:#555; padding:1px 7px; border-radius:10px; font-size:10px; margin-left:4px; }
+  .pool-header .toggle-icon { font-size:10px; color:#4a9eda; }
+  #pool-scroll { max-height:220px; overflow-y:auto; padding:0 6px 6px; }
+
+  /* Day Tabs */
+  .day-tabs { display:flex; border-bottom:1px solid #eee; background:#fafafa; flex-shrink:0; }
+  .day-tab { flex:1; padding:9px 4px; text-align:center; cursor:pointer; font-size:12px; font-weight:600; color:#888; border-bottom:3px solid transparent; transition:all .15s; }
+  .day-tab:hover { color:#555; background:#f0f0f0; }
+  .day-tab.active { color:#4a9eda; border-bottom-color:#4a9eda; background:#fff; }
+  .day-tab .dd { font-size:10px; font-weight:400; color:#aaa; display:block; }
+  .day-tab.active .dd { color:#7ab8e8; }
+
+  /* Day area */
+  #day-area { flex:1; overflow-y:auto; padding:8px; }
+  .day-label { font-size:11px; font-weight:700; color:#4a9eda; padding:4px 8px 6px; display:flex; align-items:center; gap:6px; }
+  .hotel-badge { font-size:10px; background:#fff3e0; color:#e67e22; padding:2px 8px; border-radius:4px; font-weight:600; }
+
+  /* Drop zone */
+  .drop-zone { min-height:50px; border:2px dashed #ddd; border-radius:10px; padding:6px; transition:all .2s; background:#fafbfc; }
+  .drop-zone.drag-over { border-color:#4a9eda; background:#e8f4fd; }
+  .drop-zone.empty::after { content:'\\2191 위에서 장소를 드래그하세요'; display:block; text-align:center; color:#bbb; font-size:12px; padding:14px 0; }
+  #drop-pool.empty::after { content:'모든 장소 배정 완료'; }
+
+  /* Cards */
+  .spot-card-wrapper { position:relative; margin-bottom:5px; }
+  .spot-card { display:flex; gap:10px; padding:8px; border-radius:10px; cursor:grab; transition:all .15s; border:1px solid #eee; background:#fff; user-select:none; }
+  .spot-card:active { cursor:grabbing; }
+  .spot-card:hover { border-color:#ccc; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .spot-card.highlight { border-color:#4a9eda; background:#f0f8ff; }
+
+  .spot-img-wrap { position:relative; flex-shrink:0; cursor:pointer; }
+  .spot-img { width:68px; height:50px; border-radius:6px; object-fit:cover; background:#eee; display:block; }
+  .spot-img-placeholder { width:68px; height:50px; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:16px; }
+  .img-zoom { position:absolute; bottom:2px; right:2px; background:rgba(0,0,0,.5); color:#fff; width:18px; height:18px; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:11px; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .spot-img-wrap:hover .img-zoom { opacity:1; }
+
+  .spot-info { flex:1; min-width:0; }
+  .spot-name { font-weight:600; font-size:13px; color:#222; display:flex; align-items:center; gap:5px; }
+  .must-badge { font-size:9px; background:#e74c3c; color:#fff; padding:1px 5px; border-radius:3px; font-weight:700; letter-spacing:.5px; flex-shrink:0; }
+  .spot-desc { font-size:11px; color:#777; margin-top:1px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .spot-tags { margin-top:2px; }
+  .spot-tags span { display:inline-block; font-size:9px; padding:1px 5px; border-radius:3px; background:#f0f0f0; color:#666; margin-right:3px; }
+
+  .spot-num { position:absolute; top:-3px; left:-3px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:10px; color:#fff; z-index:2; border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+
+  /* Map markers */
+  .numbered-marker { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:#fff; border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.3); }
+  .hotel-marker { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.3); background:#fff; }
+
+  /* Lightbox */
+  #lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:9999; align-items:center; justify-content:center; flex-direction:column; cursor:pointer; }
+  #lightbox.show { display:flex; }
+  #lightbox img { max-width:85vw; max-height:75vh; border-radius:12px; box-shadow:0 8px 40px rgba(0,0,0,.5); }
+  #lightbox .lb-title { color:#fff; font-size:18px; font-weight:600; margin-top:16px; }
+  #lightbox .lb-close { position:absolute; top:20px; right:28px; color:#fff; font-size:32px; cursor:pointer; opacity:.7; }
+  #lightbox .lb-close:hover { opacity:1; }
+
+  .legend-bar { display:flex; gap:10px; padding:7px 14px; border-top:1px solid #eee; background:#fafafa; font-size:10px; color:#888; flex-wrap:wrap; flex-shrink:0; }
+  .legend-bar .li { display:flex; align-items:center; gap:4px; }
+  .legend-bar .ld { width:9px; height:9px; border-radius:50%; }
+  .insert-line { height:3px; background:#4a9eda; border-radius:2px; margin:2px 0; }
+  .transit-tip { font-size:11px!important; font-weight:600; padding:2px 6px!important; }
+  #transit-btn { position:absolute; top:10px; right:10px; z-index:1000; background:#fff; border:1px solid #ccc; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.15); }
+  #transit-btn:hover { background:#f0f0f0; }
+</style>
+</head>
+<body>
+
+<div id="map">
+  <button id="transit-btn" onclick="toggleTransit()">🚇 노선 숨기기</button>
+</div>
+
+<div id="sidebar">
+  <div class="sidebar-header">
+    <h2>홍콩 여행 플래너</h2>
+    <p>후보지 → Day로 드래그 · 사진 클릭 시 확대 · Day 탭 클릭 시 경로</p>
+  </div>
+
+  <div id="pool-area">
+    <div class="pool-header" onclick="togglePool()">
+      <span>미배정 후보지 <span class="cnt" id="pool-count">0</span></span>
+      <span class="toggle-icon" id="pool-arrow">▲ 접기</span>
+    </div>
+    <div id="pool-scroll">
+      <div class="drop-zone" id="drop-pool"></div>
+    </div>
+  </div>
+
+  <div class="day-tabs">
+    <div class="day-tab active" data-day="1" onclick="switchTab('1')"><span>Day 1</span><span class="dd">1일차</span></div>
+    <div class="day-tab" data-day="2" onclick="switchTab('2')"><span>Day 2</span><span class="dd">2일차</span></div>
+    <div class="day-tab" data-day="3" onclick="switchTab('3')"><span>Day 3</span><span class="dd">3일차</span></div>
+    <div class="day-tab" data-day="4" onclick="switchTab('4')"><span>Day 4</span><span class="dd">4일차</span></div>
+  </div>
+
+  <div id="day-area">
+    <div id="day-panel-1" class="day-panel">
+      <div class="day-label">Day 1 일정 <span class="hotel-badge">🏨 침사추이 숙소</span></div>
+      <div class="drop-zone" id="drop-1"></div>
+    </div>
+    <div id="day-panel-2" class="day-panel" style="display:none;">
+      <div class="day-label">Day 2 일정 <span class="hotel-badge">🏨 침사추이 숙소</span></div>
+      <div class="drop-zone" id="drop-2"></div>
+    </div>
+    <div id="day-panel-3" class="day-panel" style="display:none;">
+      <div class="day-label">Day 3 일정 <span class="hotel-badge">🏨 침사추이 숙소</span></div>
+      <div class="drop-zone" id="drop-3"></div>
+    </div>
+    <div id="day-panel-4" class="day-panel" style="display:none;">
+      <div class="day-label">Day 4 일정 <span class="hotel-badge">🏨 침사추이 → 공항</span></div>
+      <div class="drop-zone" id="drop-4"></div>
+    </div>
+  </div>
+
+  <div class="legend-bar" style="justify-content:space-between;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div class="li"><div class="ld" style="background:#e74c3c;"></div>홍콩섬</div>
+      <div class="li"><div class="ld" style="background:#3498db;"></div>구룡 (침사추이/몽콕)</div>
+      <div class="li"><div class="ld" style="background:#27ae60;"></div>근교/반나절</div>
+      <div class="li"><div class="ld" style="background:#8e44ad;"></div>야간/나이트</div>
+      <div class="li"><span class="must-badge">MUST</span> 필수</div>
+      <div class="li"><div class="ld" style="background:#e2231a;"></div>MTR 췬완선</div>
+      <div class="li"><div class="ld" style="background:#0860a8;"></div>아일랜드선</div>
+      <div class="li"><div class="ld" style="background:#f7943e;"></div>텅충선</div>
+    </div>
+    <button id="share-btn" onclick="shareURL()" style="background:#4a9eda;color:#fff;border:none;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">🔗 일정 URL 복사</button>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()">
+  <span class="lb-close">&times;</span>
+  <img id="lb-img" src="" alt="" referrerpolicy="no-referrer" crossorigin="anonymous">
+  <div class="lb-title" id="lb-title"></div>
+</div>
+
+<script>
+// Wikimedia Commons image (파일명 → 400px 썸네일 URL)
+const F = (name) => 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(name) + '?width=400';
+
+const spots = [
+  // ── 홍콩섬 (센트럴/성완) ──
+  { id:1, name:"빅토리아 피크 (스카이테라스)", lat:22.2711, lng:114.1499, color:"#e74c3c", must:true,
+    desc:"홍콩 여행 1순위! 마천루+빅토리아항 파노라마 야경. 일몰~야경 타이밍 추천",
+    tags:["피크트램","전망","아이★★★★"],
+    img:F("Hong Kong Night Skyline.jpg") },
+  { id:2, name:"피크트램", lat:22.2775, lng:114.1608, color:"#e74c3c", must:true,
+    desc:"1888년부터 운행한 급경사 트램. 45도 기울어 오르는 체험 자체가 어트랙션!",
+    tags:["센트럴","체험","아이★★★★★"],
+    img:F("The Peak Tram, Hong Kong (Ank Kumar) 01.jpg") },
+  { id:3, name:"미드레벨 에스컬레이터", lat:22.2837, lng:114.1550, color:"#e74c3c", must:false,
+    desc:"세계 최장 야외 에스컬레이터(800m). 소호 카페/맛집 골목과 연결",
+    tags:["도보","소호","아이★★★"],
+    img:F("Central-Mid-levels escalator.jpg") },
+  { id:4, name:"만모사원", lat:22.2839, lng:114.1502, color:"#e74c3c", must:false,
+    desc:"천장 가득 나선형 향이 이색적인 도교 사원. 할리우드로드 골동품 거리 옆",
+    tags:["도보","사원","아이★★"],
+    img:F("Man Mo Temple, Hong Kong.jpg") },
+  { id:5, name:"타이쿤", lat:22.2818, lng:114.1540, color:"#e74c3c", must:false,
+    desc:"옛 경찰서+감옥을 개조한 복합문화공간. 전시/카페/포토스팟. 무료입장",
+    tags:["도보","문화","아이★★★"],
+    img:F("Tai Kwun 2021 03 11.jpg") },
+  { id:6, name:"PMQ", lat:22.2834, lng:114.1519, color:"#e74c3c", must:false,
+    desc:"옛 기혼경찰숙소를 개조한 디자이너 편집숍 몰. 기념품 사기 좋음",
+    tags:["도보","쇼핑","아이★★"], img:null },
+  { id:7, name:"란콰이퐁", lat:22.2807, lng:114.1554, color:"#8e44ad", must:false,
+    desc:"홍콩 대표 나이트라이프 거리. 펍/바 밀집. 저녁 분위기 최고",
+    tags:["저녁","바/펍","어른전용"],
+    img:F("HK Central Lan Kwai Fong Bar nite a.jpg") },
+  { id:8, name:"익청빌딩 (몬스터빌딩)", lat:22.2843, lng:114.2126, color:"#e74c3c", must:false,
+    desc:"트랜스포머 촬영지. 아파트가 병풍처럼 둘러싼 압도적 인생샷 스팟",
+    tags:["MTR쿼리베이","사진","아이★★"],
+    img:F("Montane Mansion courtyard upward view Quarry Bay Hong Kong 2024 dllu.jpg") },
+
+  // ── 구룡 (침사추이/몽콕) ──
+  { id:9, name:"스타페리", lat:22.2937, lng:114.1685, color:"#3498db", must:true,
+    desc:"침사추이↔센트럴 5분 페리. 배 타고 빅토리아항 건너기, 아이에게 최고 놀이!",
+    tags:["이동수단","항구","아이★★★★★"],
+    img:F("Star Ferry, Victoria Harbour (31002395685).jpg") },
+  { id:10, name:"심포니 오브 라이츠", lat:22.2933, lng:114.1745, color:"#8e44ad", must:true,
+    desc:"매일 저녁 8시, 빅토리아항 레이저+조명 쇼. 침사추이 해변 산책로에서 관람",
+    tags:["저녁8시","무료","아이★★★★"],
+    img:F("Symphony of Lights.jpg") },
+  { id:11, name:"시계탑 & 스타의 거리", lat:22.2936, lng:114.1694, color:"#3498db", must:false,
+    desc:"옛 기차역 시계탑+해변 산책로. 이소룡 동상, 홍콩섬 스카이라인 뷰",
+    tags:["도보","산책","아이★★★"],
+    img:F("Hong Kong Clock Tower.jpg") },
+  { id:12, name:"하버시티", lat:22.2965, lng:114.1688, color:"#3498db", must:false,
+    desc:"홍콩 최대 쇼핑몰. 에어컨 피난처+키즈존. 스타페리 선착장 바로 옆",
+    tags:["쇼핑","실내","아이★★★"], img:null },
+  { id:13, name:"스카이100 (ICC)", lat:22.3037, lng:114.1602, color:"#3498db", must:false,
+    desc:"홍콩 최고층 ICC 100층 실내 전망대. 360도 뷰. 날씨 안 좋을 때 대안",
+    tags:["MTR구룡역","전망대","아이★★★"],
+    img:F("Hong Kong Sky100.jpg") },
+  { id:14, name:"딤섬 맛집 투어", lat:22.2988, lng:114.1722, color:"#3498db", must:true,
+    desc:"홍콩 왔으면 딤섬 필수! 팀호완(미슐랭 최저가)·딘타이펑·로컬 찻집",
+    tags:["먹거리","미슐랭","아이★★★★"], img:null },
+  { id:15, name:"레이디스 마켓 (몽콕)", lat:22.3196, lng:114.1705, color:"#8e44ad", must:false,
+    desc:"몽콕 대표 노점 시장. 기념품/짝퉁/잡화. 흥정은 필수!",
+    tags:["MTR몽콕","야시장","아이★★"],
+    img:F("Tung Choi Street.jpg") },
+  { id:16, name:"금붕어시장 & 꽃시장", lat:22.3247, lng:114.1699, color:"#3498db", must:false,
+    desc:"비닐봉지에 담긴 금붕어가 주렁주렁! 아이들이 신기해하는 로컬 시장",
+    tags:["MTR프린스에드워드","로컬","아이★★★★"], img:null },
+  { id:17, name:"템플스트리트 야시장", lat:22.3049, lng:114.1703, color:"#8e44ad", must:true,
+    desc:"홍콩 대표 야시장. 노점 먹거리+점집+기념품. 영화 촬영지 단골",
+    tags:["저녁","먹거리","아이★★★"],
+    img:F("Mercado en Temple St., Hong Kong, 2013-08-11, DD 01.JPG") },
+  { id:26, name:"초이홍 아파트 (무지개)", lat:22.3355, lng:114.2100, color:"#3498db", must:false,
+    desc:"무지개색 아파트+농구장 인생샷 스팟. 인스타 성지. 주민 배려 필수",
+    tags:["MTR초이홍","사진","아이★★"],
+    img:F("Choi Hung Estate.jpg") },
+
+  // ── 근교/반나절 ──
+  { id:18, name:"옹핑360 + 빅부다", lat:22.2540, lng:113.9050, color:"#27ae60", must:true,
+    desc:"25분 케이블카(크리스탈 바닥!)로 산 넘어 세계 최대 야외 청동좌불. 반나절 코스",
+    tags:["MTR텅충","케이블카","아이★★★★★"],
+    img:F("Tian Tan Buddha.jpg") },
+  { id:19, name:"타이오 수상가옥 마을", lat:22.2557, lng:113.8626, color:"#27ae60", must:false,
+    desc:"'홍콩의 베네치아' 어촌마을. 수상가옥+보트투어+분홍돌고래. 옹핑에서 버스 20분",
+    tags:["옹핑연계","보트","아이★★★★"],
+    img:F("Tai O stilt houses.jpg") },
+  { id:20, name:"홍콩 디즈니랜드", lat:22.3130, lng:114.0413, color:"#27ae60", must:false,
+    desc:"세계에서 가장 컴팩트한 디즈니. 대기 짧은 편. 아이 있으면 하루 통째로",
+    tags:["하루종일","테마파크","아이★★★★★"],
+    img:F("Hong Kong Disneyland Castle.jpg") },
+  { id:21, name:"오션파크", lat:22.2467, lng:114.1757, color:"#27ae60", must:false,
+    desc:"수족관+동물원+놀이기구+케이블카. 판다 있음! 디즈니와 양자택일",
+    tags:["하루종일","테마파크","아이★★★★★"],
+    img:F("Ocean Park Hong Kong.jpg") },
+  { id:22, name:"리펄스베이", lat:22.2360, lng:114.1970, color:"#27ae60", must:false,
+    desc:"홍콩 부촌의 해변. 모래사장 산책+틴하우 사원. 버스로 남부 드라이브",
+    tags:["버스","해변","아이★★★"],
+    img:F("Repulse Bay, Hong Kong.jpg") },
+  { id:23, name:"스탠리 마켓", lat:22.2189, lng:114.2118, color:"#27ae60", must:false,
+    desc:"유러피안 감성 해변 마을+시장. 리펄스베이와 묶어 반나절 코스",
+    tags:["버스","시장","아이★★"],
+    img:F("Stanley Market.jpg") },
+  { id:24, name:"난리안가든 & 치린수도원", lat:22.3402, lng:114.2028, color:"#27ae60", must:false,
+    desc:"도심 속 당나라식 정원+사찰. 금색 파빌리온 인생샷. 무료입장",
+    tags:["MTR다이아몬드힐","정원","아이★★"],
+    img:F("Nan Lian Garden.jpg") },
+  { id:25, name:"웡타이신 사원", lat:22.3427, lng:114.1935, color:"#27ae60", must:false,
+    desc:"소원 잘 들어주기로 유명한 도교 사원. 점술 거리 구경도 재미",
+    tags:["MTR웡타이신","사원","아이★★"], img:null },
+];
+
+const hotels = [
+  { name:"침사추이 숙소", lat:22.2980, lng:114.1720, emoji:"🏨", label:"숙소: 침사추이 (미정)", days:["1","2","3","4"] },
+];
+const gp = { name:"빅토리아 하버", lat:22.2890, lng:114.1700, emoji:"⚓" };
+const dayColors = { "1":"#4a9eda", "2":"#e67e22", "3":"#9b59b6", "4":"#e74c3c" };
+const dayHotels = { "1":hotels[0], "2":hotels[0], "3":hotels[0], "4":hotels[0] };
+
+// ─── State (localStorage 자동 저장/복원) ───
+const STORAGE_KEY = 'hongkong_planner_v1';
+const assignment = {};
+const dayOrder = { pool:[], "1":[], "2":[], "3":[], "4":[] };
+spots.forEach(s => assignment[s.id] = "pool");
+// 최초 기본값
+[9,2,1,10].forEach(id => assignment[id] = "1");
+// localStorage 복원
+try {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+  if(saved && saved.assignment){
+    Object.keys(saved.assignment).forEach(k => {
+      const nk = parseInt(k);
+      if(assignment.hasOwnProperty(nk)) assignment[nk] = saved.assignment[k];
+    });
+  }
+  if(saved && saved.order){
+    Object.keys(saved.order).forEach(k => { dayOrder[k] = saved.order[k]; });
+  }
+} catch(e){}
+function saveState(){
+  // 각 drop zone의 카드 순서도 저장
+  ['pool','1','2','3','4'].forEach(d=>{
+    const z=document.getElementById('drop-'+d);
+    if(z) dayOrder[d]=[...z.querySelectorAll('.spot-card-wrapper')].map(c=>parseInt(c.dataset.id));
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({assignment, order:dayOrder}));
+}
+
+let currentTab = "1";
+let routeLines = [];
+
+// ─── Map ───
+const map = L.map('map').setView([22.2950, 114.1600], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution:'&copy; OpenStreetMap', maxZoom:18,
+}).addTo(map);
+
+hotels.forEach(h => {
+  const ic = L.divIcon({ className:'', html:`<div class="hotel-marker" style="border-color:#f39c12;">${h.emoji}</div>`, iconSize:[36,36], iconAnchor:[18,18] });
+  L.marker([h.lat,h.lng],{icon:ic}).addTo(map).bindPopup(`<strong>${h.label}</strong>`);
+});
+const gpIc = L.divIcon({ className:'', html:`<div class="hotel-marker" style="border-color:#f39c12;">${gp.emoji}</div>`, iconSize:[36,36], iconAnchor:[18,18] });
+L.marker([gp.lat,gp.lng],{icon:gpIc}).addTo(map).bindPopup(`<strong>${gp.name}</strong>`);
+
+const markers = {};
+spots.forEach(s => {
+  const ic = L.divIcon({ className:'', html:`<div class="numbered-marker" style="background:${s.color};">${s.id}</div>`, iconSize:[32,32], iconAnchor:[16,16] });
+  markers[s.id] = L.marker([s.lat,s.lng],{icon:ic}).addTo(map)
+    .bindPopup(`<strong>${s.id}. ${s.name}</strong>${s.must?'<span style="background:#e74c3c;color:#fff;font-size:10px;padding:1px 5px;border-radius:3px;margin-left:5px;">MUST</span>':''}<br><span style="font-size:12px;color:#666;">${s.desc}</span>`);
+});
+
+// ─── MTR 노선 ───
+const transitLines = [];
+let transitVisible = true;
+const mtrLines = {
+  tsuenwan: { color:"#e2231a", stations:[  // 췬완선 (레드)
+    {name:"센트럴",lat:22.2819,lng:114.1582},{name:"애드미럴티",lat:22.2790,lng:114.1646},
+    {name:"침사추이",lat:22.2975,lng:114.1722},{name:"조던",lat:22.3049,lng:114.1717},
+    {name:"야우마테이",lat:22.3134,lng:114.1706},{name:"몽콕",lat:22.3193,lng:114.1694},
+    {name:"프린스에드워드",lat:22.3245,lng:114.1684},{name:"삼수이포",lat:22.3308,lng:114.1622},
+  ]},
+  island: { color:"#0860a8", stations:[  // 아일랜드선 (블루)
+    {name:"케네디타운",lat:22.2812,lng:114.1289},{name:"홍콩대",lat:22.2840,lng:114.1350},
+    {name:"사이잉푼",lat:22.2855,lng:114.1428},{name:"성완",lat:22.2865,lng:114.1518},
+    {name:"센트럴",lat:22.2819,lng:114.1582},{name:"애드미럴티",lat:22.2790,lng:114.1646},
+    {name:"완차이",lat:22.2775,lng:114.1730},{name:"코즈웨이베이",lat:22.2801,lng:114.1850},
+    {name:"틴하우",lat:22.2823,lng:114.1917},{name:"노스포인트",lat:22.2913,lng:114.2005},
+    {name:"쿼리베이",lat:22.2880,lng:114.2097},{name:"타이쿠",lat:22.2848,lng:114.2166},
+  ]},
+  tungchung: { color:"#f7943e", stations:[  // 텅충선 (오렌지)
+    {name:"홍콩역",lat:22.2849,lng:114.1584},{name:"구룡역",lat:22.3049,lng:114.1614},
+    {name:"올림픽",lat:22.3178,lng:114.1602},{name:"남청",lat:22.3268,lng:114.1536},
+    {name:"칭이",lat:22.3583,lng:114.1077},{name:"써니베이(디즈니환승)",lat:22.3316,lng:114.0290},
+    {name:"텅충(옹핑360)",lat:22.2895,lng:113.9414},
+  ]}
+};
+// 스타페리 항로 (점선)
+const ferryRoute = [ [22.2937,114.1685], [22.2870,114.1610] ];
+function drawTransit(){
+  Object.values(mtrLines).forEach(line=>{
+    const pts=line.stations.map(s=>[s.lat,s.lng]);
+    transitLines.push(L.polyline(pts,{color:line.color,weight:5,opacity:.45}).addTo(map));
+    line.stations.forEach(s=>{
+      const ic=L.divIcon({className:'',html:`<div style="width:8px;height:8px;border-radius:50%;background:#fff;border:2px solid ${line.color};"></div>`,iconSize:[8,8],iconAnchor:[4,4]});
+      const m=L.marker([s.lat,s.lng],{icon:ic,interactive:true,zIndexOffset:-100}).addTo(map).bindTooltip(s.name,{direction:'top',offset:[0,-6],className:'transit-tip'});
+      transitLines.push(m);
+    });
+  });
+  // 스타페리 (점선)
+  const fl=L.polyline(ferryRoute,{color:'#16a085',weight:4,opacity:.6,dashArray:'8 8'}).addTo(map);
+  fl.bindTooltip('⛴ 스타페리 항로',{sticky:true,className:'transit-tip'});
+  transitLines.push(fl);
+}
+function toggleTransit(){
+  transitVisible=!transitVisible;
+  transitLines.forEach(l=>{ if(transitVisible) l.addTo(map); else map.removeLayer(l); });
+  document.getElementById('transit-btn').textContent=transitVisible?'🚇 노선 숨기기':'🚇 노선 보기';
+}
+drawTransit();
+
+// ─── Routes ───
+function clearRoutes(){ routeLines.forEach(l=>map.removeLayer(l)); routeLines=[]; }
+
+function drawRoute(day){
+  clearRoutes();
+  const zone=document.getElementById('drop-'+day);
+  if(!zone) return;
+  const ids=[...zone.querySelectorAll('.spot-card-wrapper')].map(c=>parseInt(c.dataset.id));
+  if(ids.length<1) return;
+  const color=dayColors[day]||"#4a9eda";
+  const pts=[];
+  const h=dayHotels[day];
+  if(h) pts.push([h.lat,h.lng]);
+  ids.forEach(id=>{ const s=spots.find(x=>x.id===id); if(s) pts.push([s.lat,s.lng]); });
+  if(h) pts.push([h.lat,h.lng]);
+  if(pts.length<2) return;
+  // 외곽선 (두꺼운 테두리)
+  routeLines.push(L.polyline(pts,{color:'#000',weight:9,opacity:.2,lineCap:'round',lineJoin:'round'}).addTo(map));
+  // 메인 라인
+  routeLines.push(L.polyline(pts,{color,weight:6,opacity:.9,lineCap:'round',lineJoin:'round'}).addTo(map));
+  // 화살표 (중간중간 방향 표시)
+  for(let i=0;i<pts.length-1;i++){
+    const [y1,x1]=pts[i],[y2,x2]=pts[i+1];
+    const mx=(y1+y2)/2, my=(x1+x2)/2;
+    const ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
+    const aic=L.divIcon({className:'',html:`<div style="font-size:16px;color:${color};transform:rotate(${90-ang}deg);text-shadow:0 0 3px #fff,0 0 3px #fff;">▼</div>`,iconSize:[16,16],iconAnchor:[8,8]});
+    routeLines.push(L.marker([mx,my],{icon:aic,interactive:false}).addTo(map));
+  }
+  pts.forEach((p,i)=>{
+    routeLines.push(L.circleMarker(p,{radius:8,fillColor:color,color:'#fff',weight:3,fillOpacity:1}).addTo(map));
+    if(i>0&&i<pts.length-1){
+      const oi=L.divIcon({className:'',html:`<div style="background:${color};color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);">${i}</div>`,iconSize:[24,24],iconAnchor:[12,34]});
+      routeLines.push(L.marker(p,{icon:oi,interactive:false}).addTo(map));
+    }
+  });
+  map.fitBounds(L.latLngBounds(pts).pad(.12),{duration:.5});
+}
+
+// ─── Lightbox ───
+function openLightbox(s){
+  if(!s.img) return;
+  const lb=document.getElementById('lightbox');
+  document.getElementById('lb-img').src = s.img.replace('width=400','width=1000');
+  document.getElementById('lb-title').textContent = `${s.id}. ${s.name}`;
+  lb.classList.add('show');
+}
+function closeLightbox(){ document.getElementById('lightbox').classList.remove('show'); }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeLightbox(); });
+
+// ─── Card ───
+function createCard(s){
+  const w=document.createElement('div');
+  w.className='spot-card-wrapper'; w.dataset.id=s.id; w.draggable=true;
+
+  const imgHtml = s.img
+    ? `<div class="spot-img-wrap" draggable="false" data-sid="${s.id}"><img class="spot-img" draggable="false" src="${s.img}" alt="${s.name}" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML='<div class=\\'spot-img-placeholder\\' style=\\'background:${s.color}\\'>${s.id}</div>'"><div class="img-zoom">🔍</div></div>`
+    : `<div class="spot-img-wrap"><div class="spot-img-placeholder" style="background:${s.color}">${s.id}</div></div>`;
+
+  const mustHtml = s.must ? '<span class="must-badge">MUST</span>' : '';
+
+  w.innerHTML = `
+    <div class="spot-num" style="background:${s.color};">${s.id}</div>
+    <div class="spot-card" data-id="${s.id}">
+      ${imgHtml}
+      <div class="spot-info">
+        <div class="spot-name">${s.name} ${mustHtml}</div>
+        <div class="spot-desc">${s.desc}</div>
+        <div class="spot-tags">${s.tags.map(t=>`<span>${t}</span>`).join('')}</div>
+      </div>
+    </div>
+  `;
+
+  // Image click -> lightbox (pointerup to bypass drag interference)
+  const imgWrap = w.querySelector('.spot-img-wrap');
+  if(imgWrap && s.img){
+    let psx=0,psy=0;
+    imgWrap.addEventListener('pointerdown',(e)=>{psx=e.clientX;psy=e.clientY;});
+    imgWrap.addEventListener('pointerup',(e)=>{
+      if(Math.abs(e.clientX-psx)<5&&Math.abs(e.clientY-psy)<5){
+        e.stopPropagation(); e.preventDefault(); openLightbox(s);
+      }
+    });
+    imgWrap.addEventListener('click',(e)=>{e.stopPropagation();e.preventDefault();});
+  }
+
+  // Card click -> fly to
+  w.querySelector('.spot-card').addEventListener('click', ()=>{
+    map.flyTo([s.lat,s.lng],15,{duration:.6});
+    markers[s.id].openPopup();
+    document.querySelectorAll('.spot-card').forEach(c=>c.classList.remove('highlight'));
+    w.querySelector('.spot-card').classList.add('highlight');
+  });
+
+  w.addEventListener('dragstart', e=>{
+    if(e.target.closest&&e.target.closest('.spot-img-wrap')){e.preventDefault();return;}
+    e.dataTransfer.setData('text/plain',String(s.id));
+    e.dataTransfer.effectAllowed='move';
+    requestAnimationFrame(()=>w.classList.add('dragging'));
+  });
+  w.addEventListener('dragend', ()=>w.classList.remove('dragging'));
+  return w;
+}
+
+// ─── Drop zones ───
+function setupDZ(zoneId,day){
+  const z=document.getElementById(zoneId);
+  z.addEventListener('dragover',e=>{
+    e.preventDefault(); e.dataTransfer.dropEffect='move'; z.classList.add('drag-over');
+    const cards=[...z.querySelectorAll('.spot-card-wrapper:not(.dragging)')];
+    z.querySelectorAll('.insert-line').forEach(l=>l.remove());
+    let before=null;
+    for(const c of cards){ const r=c.getBoundingClientRect(); if(e.clientY<r.top+r.height/2){before=c;break;} }
+    const line=document.createElement('div'); line.className='insert-line';
+    if(before) z.insertBefore(line,before); else z.appendChild(line);
+  });
+  z.addEventListener('dragleave',e=>{
+    if(!z.contains(e.relatedTarget)){z.classList.remove('drag-over');z.querySelectorAll('.insert-line').forEach(l=>l.remove());}
+  });
+  z.addEventListener('drop',e=>{
+    e.preventDefault(); z.classList.remove('drag-over');
+    const sid=parseInt(e.dataTransfer.getData('text/plain'));
+    const s=spots.find(x=>x.id===sid); if(!s) return;
+    const il=z.querySelector('.insert-line'); const ns=il?il.nextElementSibling:null;
+    z.querySelectorAll('.insert-line').forEach(l=>l.remove());
+    document.querySelectorAll(`.spot-card-wrapper[data-id="${sid}"]`).forEach(el=>el.remove());
+    const nc=createCard(s);
+    if(ns&&z.contains(ns)) z.insertBefore(nc,ns); else z.appendChild(nc);
+    assignment[sid]=day;
+    saveState();
+    updateUI();
+    if(currentTab!=='pool') drawRoute(currentTab);
+  });
+}
+['pool','1','2','3','4'].forEach(d=>setupDZ('drop-'+d,d));
+
+// ─── UI ───
+function updateUI(){
+  ['pool','1','2','3','4'].forEach(d=>{
+    const z=document.getElementById('drop-'+d);
+    z.classList.toggle('empty',z.querySelectorAll('.spot-card-wrapper').length===0);
+  });
+  document.getElementById('pool-count').textContent=Object.values(assignment).filter(d=>d==='pool').length;
+}
+
+function togglePool(){
+  const area=document.getElementById('pool-area');
+  const arrow=document.getElementById('pool-arrow');
+  area.classList.toggle('collapsed');
+  arrow.textContent=area.classList.contains('collapsed')?'▼ 펼치기':'▲ 접기';
+}
+
+function switchTab(day){
+  currentTab=day;
+  document.querySelectorAll('.day-tab').forEach(t=>t.classList.toggle('active',t.dataset.day===day));
+  document.querySelectorAll('.day-panel').forEach(p=>p.style.display='none');
+  document.getElementById('day-panel-'+day).style.display='';
+  drawRoute(day);
+}
+
+// ─── URL Share ───
+function encodeState(){
+  // Format: p=1.3.5&d1=4.7.1.2&d2=...  (dots instead of commas for clean URLs)
+  const parts=[];
+  ['pool','1','2','3','4'].forEach(day=>{
+    const z=document.getElementById('drop-'+day);
+    if(z){
+      const ids=[...z.querySelectorAll('.spot-card-wrapper')].map(c=>c.dataset.id);
+      const key = day==='pool'?'p':'d'+day;
+      if(ids.length) parts.push(key+'='+ids.join('.'));
+    }
+  });
+  return parts.join('&');
+}
+
+function decodeState(){
+  const raw=window.location.hash.slice(1);
+  if(!raw || raw.length<3) return false;
+  const keyMap={p:'pool',d1:'1',d2:'2',d3:'3',d4:'4'};
+  // 전체 초기화 (localStorage 잔여 데이터 제거)
+  spots.forEach(s=>assignment[s.id]='pool');
+  ['pool','1','2','3','4'].forEach(d=>{ dayOrder[d]=[]; });
+  let found=false;
+  raw.split('&').forEach(part=>{
+    const eq=part.indexOf('=');
+    if(eq<1) return;
+    const key=part.slice(0,eq), val=part.slice(eq+1);
+    const day=keyMap[key];
+    if(day && val){
+      found=true;
+      const ids=val.split('.').map(Number).filter(n=>n>0&&!isNaN(n));
+      ids.forEach(id=>{ if(assignment.hasOwnProperty(id)) assignment[id]=day; });
+      dayOrder[day]=ids;
+    }
+  });
+  if(found) saveState(); // URL 상태를 localStorage에도 저장
+  return found;
+}
+
+function shareURL(){
+  const hash=encodeState();
+  const base=window.location.origin+window.location.pathname;
+  const fullURL=base+'#'+hash;
+  window.location.hash=hash;
+  navigator.clipboard.writeText(fullURL).then(()=>{
+    const btn=document.getElementById('share-btn');
+    btn.textContent='✅ 복사완료!';
+    setTimeout(()=>{btn.textContent='🔗 일정 URL 복사';},2000);
+  }).catch(()=>{
+    prompt('이 URL을 복사하세요:', fullURL);
+  });
+}
+
+// ─── Init ───
+function init(){
+  // URL hash가 있으면 그걸로 복원, 없으면 localStorage
+  const fromURL = decodeState();
+
+  ['pool','1','2','3','4'].forEach(day=>{
+    const z=document.getElementById('drop-'+day); z.innerHTML='';
+    const allIds=Object.entries(assignment).filter(([_,d])=>d===day).map(([id])=>parseInt(id));
+    const savedOrder = dayOrder[day] || [];
+    const ordered = savedOrder.filter(id => allIds.includes(id));
+    const remaining = allIds.filter(id => !ordered.includes(id)).sort((a,b)=>a-b);
+    const ids = [...ordered, ...remaining];
+    ids.forEach(id=>{ const s=spots.find(x=>x.id===id); if(s) z.appendChild(createCard(s)); });
+  });
+  updateUI();
+  if(!fromURL) saveState(); // URL에서 불러왔으면 localStorage도 갱신
+  switchTab('1');
+  const all=[...spots.map(s=>[s.lat,s.lng]),...hotels.map(h=>[h.lat,h.lng]),[gp.lat,gp.lng]];
+  map.fitBounds(all,{padding:[30,30]});
+}
+init();
+</script>
+</body>
+</html>
