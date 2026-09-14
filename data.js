@@ -756,5 +756,28 @@ globalThis.YOONHWAN_RESTAURANTS=[
       "윤환 추천"
     ],
     "coordinateNote": "핀은 홍콩 정부 주소 조회의 건물 위치 기준입니다. 정확한 매장 입구는 구글지도에서 확인하세요."
+  },
+  {
+    "id": "yoon-sang-kee",
+    "name": "상기콘지 · Sang Kee Congee Shop",
+    "englishName": "Sang Kee Congee Shop",
+    "lat": 22.28527,
+    "lng": 114.15166,
+    "address": "G/F, 7 Burd Street, Sheung Wan, Hong Kong",
+    "region": "홍콩섬",
+    "menus": [
+      "콘지 · 홍콩식 죽"
+    ],
+    "desc": "윤환이 추천한 셩완 버드 스트리트의 죽 전문점. 구체적인 주문 메뉴는 따로 전달되지 않았어요.",
+    "googleUrl": "https://maps.app.goo.gl/9P5NE2vrwdhZcVPH9?g_st=akt",
+    "source": "https://www.openrice.com/en/hongkong/r-sang-kee-congee-shop-sheung-wan-guangdong-congee-r3023/menus",
+    "heesu": true,
+    "recommender": "윤환",
+    "verdict": "추천",
+    "tags": [
+      "먹거리",
+      "윤환 추천"
+    ],
+    "coordinateNote": "핀은 홍콩 정부 주소 조회의 건물 위치 기준입니다. 정확한 매장 입구는 구글지도에서 확인하세요."
   }
 ];
