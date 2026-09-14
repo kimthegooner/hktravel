@@ -2,26 +2,25 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#153f38"><title>홍콩·마카오 여행 플래너</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="styles.css">
-<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script defer src="data.js"></script><script defer src="planner.js"></script><script defer src="app.js"></script>
+<meta name="theme-color" content="#153f38"><title>상하이 여행 플래너</title>
+<link rel="stylesheet" href="../vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="../styles.css">
+<script defer src="../vendor/leaflet/leaflet.js"></script>
+<script defer src="../vendor/coordtransform.js"></script><script defer src="data.js"></script><script defer src="../planner.js"></script><script defer src="../app.js"></script>
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="#" aria-label="여행 플래너 홈"><span class="brand-icon">旅</span><span>나의 홍콩 여행<small>HONG KONG & MACAU</small></span></a>
-  <nav class="city-switch" aria-label="여행 도시"><a href="./" aria-current="page">홍콩</a><a href="shanghai/">상하이</a></nav><div class="trip-control"><label class="sr-only" for="trip-select">저장된 여행</label><select id="trip-select"></select><button id="new-trip" title="새 여행 만들기">＋ 새 여행</button></div>
+  <a class="brand" href="#" aria-label="여행 플래너 홈"><span class="brand-icon">旅</span><span>나의 상하이 여행<small>SHANGHAI</small></span></a>
+  <nav class="city-switch" aria-label="여행 도시"><a href="../">홍콩</a><a href="./" aria-current="page">상하이</a></nav><div class="trip-control"><label class="sr-only" for="trip-select">저장된 여행</label><select id="trip-select"></select><button id="new-trip" title="새 여행 만들기">＋ 새 여행</button></div>
   <div class="header-actions"><span id="save-status" role="status">이 기기에 저장</span><button id="settings-btn">여행 설정</button><button id="share-btn" class="primary">공유하기 ↗</button><button id="backup-btn" aria-label="백업과 복원">⋯</button></div>
 </header>
 <nav class="mobile-tabs" aria-label="모바일 화면"><button data-view="plan" aria-pressed="true">일정</button><button data-view="map" aria-pressed="false">지도</button></nav>
 <main>
   <aside id="sidebar">
-    <div class="panel-heading"><div><span class="eyebrow">MY LITTLE GETAWAY</span><h1 id="trip-title">홍콩·마카오 여행</h1><p id="trip-summary"></p></div><span class="stamp">HK<br>MO</span></div>
+    <div class="panel-heading"><div><span class="eyebrow">MY LITTLE GETAWAY</span><h1 id="trip-title">상하이 여행</h1><p id="trip-summary"></p></div><span class="stamp">SH<br>上海</span></div>
     <div id="day-tabs" class="day-tabs" aria-label="여행 날짜"></div>
     <nav class="section-tabs" aria-label="장소 목록"><button data-section="schedule" aria-pressed="true">내 일정 <span id="schedule-count"></span></button><button data-section="explore" aria-pressed="false">장소 찾기</button></nav>
-    <button id="heesu-btn" class="heesu-button" aria-pressed="false"><svg class="food-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3v6a3 3 0 0 0 6 0V3M8 3v18M18 3c-2 2-3 5-3 9h4V3h-1ZM19 12v9"/></svg><span>희수의 맛집 보기<small>친구가 골라준 홍콩의 맛</small></span><span class="heesu-count food-count">→</span></button>
-    <button id="yoonhwan-btn" class="heesu-button" aria-pressed="false"><svg class="food-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3v6a3 3 0 0 0 6 0V3M8 3v18M18 3c-2 2-3 5-3 9h4V3h-1ZM19 12v9"/></svg><span>윤환의 맛집 리스트<small>친구가 골라준 홍콩의 다섯 곳</small></span><span id="yoonhwan-count" class="food-count">5곳 →</span></button>
+    <button id="heesu-btn" class="heesu-button" aria-pressed="false"><svg class="food-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3v6a3 3 0 0 0 6 0V3M8 3v18M18 3c-2 2-3 5-3 9h4V3h-1ZM19 12v9"/></svg><span>리재의 맛집 리스트<small>친구가 골라준 상하이의 맛</small></span><span class="heesu-count food-count">→</span></button>
     <div id="search-area" hidden><label class="search-box"><span>⌕</span><input id="search" type="search" placeholder="장소, 지역, 메뉴 검색" aria-label="장소 검색"></label><div id="filters" class="filters"></div></div>
     <div id="list-heading" class="list-heading"></div>
     <div id="place-list" class="place-list"></div>
@@ -31,7 +30,7 @@
     <div id="map"></div>
     <div id="map-fallback" hidden>지도를 불러오지 못했어요.<br>네트워크 연결 후 새로고침해 주세요.<small>일정 편집과 저장은 계속 사용할 수 있어요.</small></div>
     <div class="map-top"><div class="map-caption"><span class="status-dot"></span><div><strong id="map-title">오늘의 여정</strong><small id="map-subtitle">장소를 눌러 자세히 보기</small></div></div><button id="fit-btn" class="map-button">전체 보기 ⤢</button></div>
-    <div class="map-tools"><button id="transit-btn" class="map-button" aria-pressed="false">🚇 노선 보기</button><button id="location-btn" class="map-button">◎ 내 위치</button></div>
+    <div class="map-tools"><button hidden id="transit-btn" class="map-button" aria-pressed="false">🚇 노선 보기</button><button id="location-btn" class="map-button">◎ 내 위치</button></div>
     <div class="map-note" id="map-note">점선은 방문 순서예요. 실제 이동 경로는 길찾기에서 확인하세요.</div>
   </section>
 </main>
