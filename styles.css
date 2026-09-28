@@ -41,3 +41,11 @@ body{height:100dvh;display:flex;flex-direction:column}.topbar,.mobile-tabs{flex-
 }
 
 @media(max-width:900px){.heesu-button{width:calc(100% - 32px)}}
+/* Day 원터치 담기/빼기 */
+.day-chips{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.day-chip{font-size:10px;padding:6px 7px;border-radius:7px;background:var(--soft);border:1px solid transparent;color:var(--green);font-weight:700;min-height:32px;white-space:nowrap}
+.day-chip:hover{background:#dfe8dd}
+.day-chip.on{background:var(--green);color:#fff}
+.day-chip.on:hover{background:#7e3b2c;}
+.card-actions .remove-btn{color:#b34432;margin-left:auto}
+@media(max-width:700px){.day-chip{min-height:40px;font-size:11px;padding:8px 9px}}
