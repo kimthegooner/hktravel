@@ -10,7 +10,8 @@
     if(!p || !text(p.name) || !coord(p.lat,90) || !coord(p.lng,180)) return null;
     return {id:String(p.id).slice(0,80),name:text(p.name),lat:p.lat,lng:p.lng,desc:text(p.desc,2000),address:text(p.address,500),menus:Array.isArray(p.menus)?p.menus.map(x=>text(x,100)).filter(Boolean).slice(0,20):[],tags:Array.isArray(p.tags)?p.tags.map(x=>text(x,80)).slice(0,10):[],region:regions.includes(p.region)?p.region:regions[0],heesu:!!p.heesu,custom:true};
   }
-  function day(i){if(config.city==='shanghai')return {title:'상하이',hotel:null,stops:[]};return {title:i<2?'홍콩':'마카오',hotel:i<2?{name:'침사추이 숙소 (미정)',lat:22.298,lng:114.172}:{name:'마카오 숙소 (미정)',lat:22.148,lng:113.559},stops:[]};}
+  const HOTELS={hk:{name:'더 솔즈베리 YMCA 홍콩',lat:22.2946,lng:114.1706},mo:{name:'브로드웨이 호텔 마카오',lat:22.1447,lng:113.5655}};
+  function day(i){if(config.city==='shanghai')return {title:'상하이',hotel:null,stops:[]};return {title:i<2?'홍콩':'마카오',hotel:i<2?{...HOTELS.hk}:{...HOTELS.mo},stops:[]};}
   function fresh(){return {id:id(),city,name:config.tripName||'홍콩·마카오 여행',start:'',days:Array.from({length:4},(_,i)=>day(i)),custom:[]};}
   function normalize(input,base){
     if(input && (input.city||'hongkong')!==city)throw Error('다른 도시의 여행입니다. 해당 도시 화면에서 열어 주세요.');
@@ -19,7 +20,9 @@
     const baseIds=new Set(base.map(p=>String(p.id))), unique=new Set();
     const clean=custom.filter(p=>!baseIds.has(p.id)&&!unique.has(p.id)&&unique.add(p.id));
     const valid=new Set([...baseIds,...clean.map(p=>p.id)]), seen=new Set();
-    const days=input.days.map((d,i)=>({title:text(d?.title,50)||'Day '+(i+1),hotel:d?.hotel&&coord(d.hotel.lat,90)&&coord(d.hotel.lng,180)?{name:text(d.hotel.name)||'숙소',lat:d.hotel.lat,lng:d.hotel.lng}:null,stops:(Array.isArray(d?.stops)?d.stops:[]).flatMap(s=>{
+    // 예약 확정 전 저장된 플레이스홀더 숙소는 확정 숙소로 마이그레이션
+    const upgrade=h=>h.name==='침사추이 숙소 (미정)'?{...HOTELS.hk}:h.name==='마카오 숙소 (미정)'?{...HOTELS.mo}:h;
+    const days=input.days.map((d,i)=>({title:text(d?.title,50)||'Day '+(i+1),hotel:d?.hotel&&coord(d.hotel.lat,90)&&coord(d.hotel.lng,180)?upgrade({name:text(d.hotel.name)||'숙소',lat:d.hotel.lat,lng:d.hotel.lng}):null,stops:(Array.isArray(d?.stops)?d.stops:[]).flatMap(s=>{
       const sid=String(s?.id); if(!valid.has(sid)||seen.has(sid))return []; seen.add(sid);
       return [{id:sid,time:/^([01]\d|2[0-3]):[0-5]\d$/.test(s.time)?s.time:'',duration:Math.max(0,Math.min(1440,Number(s.duration)||0)),note:text(s.note,2000),visited:!!s.visited,mode:['walking','transit','driving'].includes(s.mode)?s.mode:'transit'}];
     })}));
