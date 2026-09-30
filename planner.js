@@ -11,11 +11,19 @@
     return {id:String(p.id).slice(0,80),name:text(p.name),lat:p.lat,lng:p.lng,desc:text(p.desc,2000),address:text(p.address,500),menus:Array.isArray(p.menus)?p.menus.map(x=>text(x,100)).filter(Boolean).slice(0,20):[],tags:Array.isArray(p.tags)?p.tags.map(x=>text(x,80)).slice(0,10):[],region:regions.includes(p.region)?p.region:regions[0],heesu:!!p.heesu,custom:true};
   }
   const HOTELS={hk:{name:'더 솔즈베리 YMCA 홍콩',lat:22.2946,lng:114.1706},mo:{name:'브로드웨이 호텔 마카오',lat:22.1447,lng:113.5655}};
-  function day(i){if(config.city==='shanghai')return {title:'상하이',hotel:null,stops:[]};return {title:i<2?'홍콩':'마카오',hotel:i<2?{...HOTELS.hk}:{...HOTELS.mo},stops:[]};}
-  function fresh(){return {id:id(),city,name:config.tripName||'홍콩·마카오 여행',start:'',days:Array.from({length:4},(_,i)=>day(i)),custom:[]};}
+  // 확정 항공편: 10/23(금) ICN→HKG 10:55 도착 (KE2001) · 10/27(화) MFM→ICN 14:55 출발 (KE2016)
+  const TRIP_START='2026-10-23';
+  const DAY_TITLES=['홍콩 도착 10:55','홍콩','홍콩 → 마카오','마카오','마카오 출국 14:55'];
+  const DEFAULT_TITLE=t=>!t||t==='홍콩'||t==='마카오'||/^Day \d+$/.test(t);
+  function day(i){if(config.city==='shanghai')return {title:'상하이',hotel:null,stops:[]};return {title:DAY_TITLES[i]||'Day '+(i+1),hotel:i<2?{...HOTELS.hk}:{...HOTELS.mo},stops:[]};}
+  function fresh(){const sh=city==='shanghai';return {id:id(),city,name:config.tripName||'홍콩·마카오 여행',start:sh?'':TRIP_START,days:Array.from({length:sh?4:5},(_,i)=>day(i)),custom:[]};}
   function normalize(input,base){
     if(input && (input.city||'hongkong')!==city)throw Error('다른 도시의 여행입니다. 해당 도시 화면에서 열어 주세요.');
     if(!input || !Array.isArray(input.days) || input.days.length<1 || input.days.length>30) throw Error('여행 일수는 1~30일이어야 합니다.');
+    // 항공권 확정 전의 기본 4일 트립(제목·날짜 미변경)은 확정 일정(10/23~10/27, 5일)으로 확장
+    if(city==='hongkong'&&input.days.length===4&&!text(input.start,10)&&input.days.every(d=>DEFAULT_TITLE(d?.title))){
+      input={...input,start:TRIP_START,days:[...input.days.map((d,i)=>({...d,title:DAY_TITLES[i]})),{title:DAY_TITLES[4],hotel:{...HOTELS.mo},stops:[]}]};
+    }
     const custom=(Array.isArray(input.custom)?input.custom:[]).slice(0,500).map(place).filter(Boolean);
     const baseIds=new Set(base.map(p=>String(p.id))), unique=new Set();
     const clean=custom.filter(p=>!baseIds.has(p.id)&&!unique.has(p.id)&&unique.add(p.id));
