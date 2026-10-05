@@ -66,7 +66,17 @@
     if(to===null)return;
     const list=trip.days[to].stops, pos=list.findIndex(s=>s.id===before);list.splice(pos<0?list.length:pos,0,stop);
   }
+  // 이미 담긴 장소를 다시 담으면 순서를 그대로 두고, 다른 날에 있으면 옮긴 뒤 원래 날을 알려 준다.
+  function assign(trip,sid,to,before=null){
+    sid=String(sid);const from=trip.days.findIndex(d=>d.stops.some(s=>s.id===sid));
+    if(from===to)return {from,moved:false};
+    move(trip,sid,to,before);return {from,moved:true};
+  }
+  // 여행 시작일과 오늘 날짜(YYYY-MM-DD)로 오늘이 몇째 날인지. 여행 기간 밖이거나 날짜가 없으면 -1.
+  function dayNumber(v){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||'');return m?Date.UTC(+m[1],+m[2]-1,+m[3])/864e5:NaN;}
+  function todayIndex(start,count,today){const diff=dayNumber(today)-dayNumber(start);return Number.isInteger(diff)&&diff>=0&&diff<count?diff:-1;}
+  function phase(start,count,today){const diff=dayNumber(today)-dayNumber(start);if(!Number.isInteger(diff))return 'none';return diff<0?'before':diff<count?'during':'after';}
   function date(start,i){if(!start)return '';const d=new Date(start+'T12:00:00');d.setDate(d.getDate()+i);return `${d.getMonth()+1}.${d.getDate()} (${['일','월','화','수','목','금','토'][d.getDay()]})`;}
-  root.Planner={id,day,fresh,normalize,legacy,fromHash,hash,move,date,place};
+  root.Planner={id,day,fresh,normalize,legacy,fromHash,hash,move,assign,todayIndex,phase,date,place};
   if(typeof module!=='undefined')module.exports=root.Planner;
 })(globalThis);
