@@ -2,38 +2,59 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#153f38"><title>상하이 여행 플래너</title>
+<meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0d1312" media="(prefers-color-scheme: dark)"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%23d4442a%27/%3E%3C/svg%3E"><title>상하이 여행 플래너</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="../vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="../styles.css">
 <script defer src="../vendor/leaflet/leaflet.js"></script>
 <script defer src="../vendor/coordtransform.js"></script><script defer src="data.js"></script><script defer src="../planner.js"></script><script defer src="../app.js"></script>
 </head>
-<body>
+<body class="city-sh" data-tab="today">
+<section id="map-panel" aria-label="여행 지도">
+  <div id="map"></div>
+  <div id="map-fallback" hidden>지도를 불러오지 못했어요.<br>네트워크 연결 후 새로고침해 주세요.<small>일정 편집과 저장은 계속 사용할 수 있어요.</small></div>
+  <p class="map-note" id="map-note">선은 방문 순서예요. 실제 이동 경로는 길찾기에서 확인하세요.</p>
+</section>
 <header class="topbar">
-  <a class="brand" href="#" aria-label="여행 플래너 홈"><span class="brand-icon">旅</span><span>나의 상하이 여행<small>SHANGHAI</small></span></a>
-  <nav class="city-switch" aria-label="여행 도시"><a href="../">홍콩</a><a href="./" aria-current="page">상하이</a></nav><div class="trip-control"><label class="sr-only" for="trip-select">저장된 여행</label><select id="trip-select"></select><button id="new-trip" title="새 여행 만들기">＋ 새 여행</button></div>
-  <div class="header-actions"><span id="save-status" role="status">이 기기에 저장</span><button id="settings-btn">여행 설정</button><button id="share-btn" class="primary">공유하기 ↗</button><button id="backup-btn" aria-label="백업과 복원">⋯</button></div>
+  <a class="brand" href="#" aria-label="여행 플래너 홈"><i aria-hidden="true"></i><span>상하이 여행</span></a>
+  <nav class="city-switch" aria-label="여행 도시"><a href="../">홍콩</a><a href="./" aria-current="page">상하이</a></nav>
+  <div class="trip-control"><label class="sr-only" for="trip-select">저장된 여행</label><select id="trip-select"></select><button id="new-trip" title="새 여행 만들기">＋ 새 여행</button></div>
+  <span class="spacer"></span>
+  <span id="save-status" class="save-status mono" role="status">이 기기에 저장</span><button id="settings-btn">여행 설정</button><button id="backup-btn" aria-label="백업과 복원" data-ico="more"></button><button id="share-btn" class="pri" data-ico="share">공유</button>
 </header>
-<nav class="mobile-tabs" aria-label="모바일 화면"><button data-view="plan" aria-pressed="true">일정</button><button data-view="map" aria-pressed="false">지도</button></nav>
-<main>
-  <aside id="sidebar">
-    <div class="panel-heading"><div><span class="eyebrow">MY LITTLE GETAWAY</span><h1 id="trip-title">상하이 여행</h1><p id="trip-summary"></p></div><span class="stamp">SH<br>上海</span></div>
-    <div id="day-tabs" class="day-tabs" aria-label="여행 날짜"></div>
-    <nav class="section-tabs" aria-label="장소 목록"><button data-section="schedule" aria-pressed="true">내 일정 <span id="schedule-count"></span></button><button data-section="explore" aria-pressed="false">장소 찾기</button></nav>
-    <button id="heesu-btn" class="heesu-button" aria-pressed="false"><svg class="food-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3v6a3 3 0 0 0 6 0V3M8 3v18M18 3c-2 2-3 5-3 9h4V3h-1ZM19 12v9"/></svg><span>리재의 맛집 리스트<small>친구가 골라준 상하이의 맛</small></span><span class="heesu-count food-count">→</span></button>
-    <div id="search-area" hidden><label class="search-box"><span>⌕</span><input id="search" type="search" placeholder="장소, 지역, 메뉴 검색" aria-label="장소 검색"></label><div id="filters" class="filters"></div></div>
-    <div id="list-heading" class="list-heading"></div>
-    <div id="place-list" class="place-list"></div>
-    <footer class="sidebar-footer"><button id="add-btn">＋ 장소 직접 추가</button><button id="undo-btn" disabled>↶ 되돌리기</button></footer>
-  </aside>
-  <section id="map-panel" aria-label="여행 지도">
-    <div id="map"></div>
-    <div id="map-fallback" hidden>지도를 불러오지 못했어요.<br>네트워크 연결 후 새로고침해 주세요.<small>일정 편집과 저장은 계속 사용할 수 있어요.</small></div>
-    <div class="map-top"><div class="map-caption"><span class="status-dot"></span><div><strong id="map-title">오늘의 여정</strong><small id="map-subtitle">장소를 눌러 자세히 보기</small></div></div><button id="fit-btn" class="map-button">전체 보기 ⤢</button></div>
-    <div class="map-tools"><button hidden id="transit-btn" class="map-button" aria-pressed="false">🚇 노선 보기</button><button id="location-btn" class="map-button">◎ 내 위치</button></div>
-    <div class="map-note" id="map-note">점선은 방문 순서예요. 실제 이동 경로는 길찾기에서 확인하세요.</div>
-  </section>
+<div class="float-top">
+  <button id="day-btn" class="float day-btn" aria-haspopup="dialog"></button>
+  <div class="map-tools"><button id="fit-btn" class="float" data-ico="expand"><span>전체 보기</span></button><button hidden id="transit-btn" class="float" aria-pressed="false" data-ico="train"><span>노선</span></button><button id="location-btn" class="float" data-ico="loc"><span>내 위치</span></button></div>
+</div>
+<button id="detail-back" class="float detail-back" aria-label="뒤로" data-ico="back" hidden></button>
+<nav class="tabbar" id="tabbar" aria-label="화면">
+  <button data-tab="today" data-ico="today">오늘</button><button data-tab="plan" data-ico="cal">일정</button><button data-tab="find" data-ico="search">찾기</button><button data-tab="more" data-ico="more">더보기</button>
+</nav>
+<main id="sheet" class="sheet" aria-label="일정">
+  <div class="grip" data-grip><span></span></div>
+  <div class="sheet-body">
+    <section id="view-today" class="view" aria-label="오늘"></section>
+    <section id="view-plan" class="view" aria-label="일정 짜기"><div id="day-tabs" class="days" aria-label="여행 날짜"></div><div id="plan-list"></div></section>
+    <section id="view-more" class="view" aria-label="더보기"></section>
+  </div>
+  <footer class="panel-foot"><button id="add-btn" data-ico="plus">직접 추가</button><button id="undo-btn" data-ico="undo" disabled>되돌리기</button></footer>
 </main>
+<section id="find" class="sheet find" aria-label="장소 찾기">
+  <div class="grip" data-grip><span></span></div>
+  <div class="find-head">
+    <div class="search-row"><label class="search-box"><span data-ico="search"></span><input id="search" type="search" placeholder="장소, 지역, 메뉴 검색" aria-label="장소 검색" autocomplete="off"></label><button id="find-toggle" class="find-toggle" aria-expanded="false">목록</button></div>
+    <div class="pick-row"><span>담을 날 <b id="pick-label"></b></span><button id="pick-change" aria-expanded="false">바꾸기</button></div>
+    <div id="pick-days" class="pick-days" hidden></div>
+    <div id="filters" class="text-tabs" role="tablist" aria-label="장소 분류"></div>
+    <div id="friend-switch" class="friend-switch" hidden><button id="friend-all" aria-pressed="true">전체</button><button id="heesu-btn" aria-pressed="false">리재의 맛집 리스트 <span class="heesu-count mono"></span></button><button id="rec-only" aria-pressed="false">추천만</button></div>
+  </div>
+  <div class="sheet-body"><div id="list-heading" class="list-heading"></div><ul id="place-list" class="find-list"></ul></div>
+</section>
+<section id="detail" class="sheet detail" aria-label="장소 상세" hidden>
+  <div class="grip" data-grip><span></span></div>
+  <div class="sheet-body" id="detail-body"></div>
+</section>
 <dialog id="editor"><div class="dialog-head"><h2 id="dialog-title"></h2><button id="close-dialog" aria-label="닫기">✕</button></div><div id="dialog-body"></div></dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 </body>
