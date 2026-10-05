@@ -308,7 +308,7 @@ dialog::backdrop{background:rgba(10,16,15,.45)}
 dialog img{max-width:100%;border-radius:10px;display:block}
 
 /* ── 알림 ── */
-#toast{position:fixed;left:50%;bottom:calc(var(--tabbar) + 14px);transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--sf);border-radius:12px;padding:0 6px 0 16px;min-height:44px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;z-index:30;transition:.2s;max-width:calc(100vw - 32px);box-shadow:var(--shadow-panel)}
+#toast{position:fixed;left:50%;width:max-content;max-width:calc(100vw - 32px);white-space:nowrap;bottom:calc(var(--tabbar) + 14px);transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--sf);border-radius:12px;padding:0 6px 0 16px;min-height:44px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;z-index:30;transition:.2s;max-width:calc(100vw - 32px);box-shadow:var(--shadow-panel)}
 #toast:not(:has(button)){padding-right:16px}
 #toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 #toast button{border:0;background:none;color:var(--sf);font-weight:700;min-height:44px;padding:0 10px;text-decoration:underline;text-underline-offset:3px}
