@@ -171,15 +171,15 @@ body.no-map .map-tools,body.no-map .map-note{display:none}
 .prow .thumb{width:40px;height:40px;border-radius:8px;font-size:9px}
 .prow .nm{font-weight:600;font-size:14px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prow .sub{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mut);min-width:0;flex-wrap:wrap}
-.prow .sub select{border:0;background:none;color:var(--mut);font-size:11px;padding:0;min-height:28px;max-width:90px}
-.prow .sub a{color:var(--route);font-weight:600;text-decoration:none;min-height:28px;display:inline-flex;align-items:center}
+.prow .sub select{border:0;background:none;color:var(--mut);font-size:11px;padding:0;min-height:36px;max-width:90px}
+.prow .sub a{color:var(--route);font-weight:600;text-decoration:none;min-height:36px;display:inline-flex;align-items:center}
 .prow .dur{font-size:11px;color:var(--mut);padding-right:4px}
 .plist>li.visited .nm{color:var(--mut);font-weight:500}
 .plist>li.dragging{opacity:.4}
 .plist>li.drop-before{box-shadow:inset 0 2px var(--route)}
 .plist>li.drop-after{box-shadow:inset 0 -2px var(--route)}
 .row-tools{display:flex;flex-wrap:wrap;gap:6px;padding:8px 2px 12px 34px}
-.row-tools button,.row-tools a{min-height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--sf);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px;text-decoration:none;color:var(--ink)}
+.row-tools button,.row-tools a{min-height:44px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--sf);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px;text-decoration:none;color:var(--ink)}
 .row-tools button[data-act="up"],.row-tools button[data-act="down"]{width:44px;padding:0;justify-content:center}
 .row-tools .warn{color:var(--acc)}
 .row-tools .note{flex-basis:100%;margin:0 0 4px;font-size:12px;color:var(--mut);white-space:pre-wrap}
@@ -252,7 +252,7 @@ body.no-map .map-tools,body.no-map .map-note{display:none}
 .info b{font-weight:600;text-align:right;min-width:0;overflow-wrap:anywhere}
 .info b.mono{font-size:14px}
 .info .day-acts{display:flex;gap:6px}
-.info .day-acts button{min-height:36px;padding:0 10px;border-radius:9px;border:1px solid var(--line);background:var(--sf);font-weight:600;font-size:12px}
+.info .day-acts button{min-height:44px;padding:0 10px;border-radius:9px;border:1px solid var(--line);background:var(--sf);font-weight:600;font-size:12px}
 .desc{padding:12px 18px 0;font-size:14px;line-height:1.65;margin:0}
 .facts{margin:12px 16px 0;border-top:1px solid var(--line);font-size:13px}
 .facts>div{padding:10px 0;border-bottom:1px solid var(--line)}
