@@ -106,7 +106,7 @@ function confirmBox(title,text,okLabel,onOk){openDialog(title,`<p>${esc(text)}</
 function askMove(id,to){const from=dayOf(id);confirmBox('다른 날에 담긴 곳이에요',`${getPlace(id).name}은(는) 지금 D${from+1}에 있어요. D${to+1}로 옮길까요?`,`D${to+1}로 옮기기`,()=>addTo(id,to));}
 
 /* ── 지도 ── */
-function initMap(){if(!window.L){$('#map-fallback').hidden=false;document.body.classList.add('no-map');return;}
+function initMap(){if(!window.L){$('#map-fallback').hidden=false;document.body.classList.add('no-map');setTimeout(()=>toast('지도를 불러오지 못했어요. 일정 편집과 저장은 계속 쓸 수 있어요.'),600);return;}
   map=L.map('map',{zoomControl:true,zoomAnimation:false,fadeAnimation:false,markerZoomAnimation:false}).setView(C.center||[22.29,114.165],13);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
   markerLayer=L.layerGroup().addTo(map);routeLayer=L.layerGroup().addTo(map);transitLayer=L.layerGroup();locationLayer=L.layerGroup().addTo(map);

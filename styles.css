@@ -98,6 +98,7 @@ body[data-tab="today"] #view-today,body[data-tab="plan"] #view-plan,body[data-ta
 body[data-tab="plan"] .panel-foot{display:flex}
 body.no-map .sheet{max-height:none;height:auto!important;top:calc(64px + env(safe-area-inset-top,0px))}
 body.no-map .sheet.detail{top:72px}
+body.no-map .map-tools,body.no-map .map-note{display:none}
 
 /* 공통 버튼 */
 .btn{height:52px;border-radius:12px;border:1px solid var(--line);background:var(--sf);color:var(--ink);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;padding:0 12px;min-width:0;white-space:nowrap}
