@@ -117,19 +117,21 @@ function initMap(){if(!window.L){$('#map-fallback').hidden=false;document.body.c
 }
 const cssVar=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const pinIcon=(cls,label='')=>L.divIcon({className:'',html:`<div class="pin ${cls}">${esc(label)}</div>`,iconSize:null});
+const friendCls=p=>p&&p.heesu?(' tri '+(p.recommender==='윤환'?'tri-yoon':'tri-heesu')):'';
+const markIcon=(p,cls,label='')=>{const f=friendCls(p);if(!f||/label/.test(cls))return pinIcon(cls,label);return L.divIcon({className:'',html:`<div class="tri-wrap"><div class="pin ${cls}${f}">${esc(label)}</div></div>`,iconSize:null});};
 function foodMode(){return filter==='친구 맛집';}
 function mapMode(){return (tab==='find'&&!isPC())||(isPC()&&findOpen)?'find':'day';}
 function nextStop(i=current){return dayStops(i).find(x=>!x.s.visited)||null;}
 function drawMap(fit=false){if(!map)return;markerLayer.clearLayers();routeLayer.clearLayers();markers.clear();const bounds=[];
   if(mapMode()==='find'){
     findList().forEach((p,i)=>{if(!located(p))return;const added=dayOf(p.id)===pickDay;if(filter!=='근처'||i<12)bounds.push([p.lat,p.lng]);
-      const m=L.marker([p.lat,p.lng],{icon:pinIcon(foodMode()?'food':added?'added':'cand',foodMode()?String(i+1):''),zIndexOffset:added?200:0}).addTo(markerLayer).bindPopup(()=>popup(p),{maxWidth:280});markers.set(p.id,m);
+      const m=L.marker([p.lat,p.lng],{icon:markIcon(p,foodMode()?'food':added?'added':'cand',foodMode()?String(i+1):''),zIndexOffset:added?200:0}).addTo(markerLayer).bindPopup(()=>popup(p),{maxWidth:280});markers.set(p.id,m);
       if(foodMode())m.bindTooltip(`<b>${i+1}. ${esc(p.name)}</b><small>${esc((p.menus||[]).join(' · '))}</small>`,{permanent:true,direction:'top',offset:[0,-16],opacity:1,className:'food-label',interactive:true});});
   }else{
     const d=trip().days[current],list=dayStops(),nx=nextStop(),line=[];
     if(d.hotel){line.push([d.hotel.lat,d.hotel.lng]);L.marker([d.hotel.lat,d.hotel.lng],{icon:pinIcon('hotel','⌂')}).bindPopup(esc(d.hotel.name)).addTo(markerLayer);}
     list.forEach(({s,p},i)=>{if(!located(p))return;line.push([p.lat,p.lng]);const isNext=nx&&nx.s.id===s.id;
-      const m=L.marker([p.lat,p.lng],{icon:pinIcon(isNext?'label':s.visited?'done':'',isNext?`${s.time?s.time+' ':''}${p.name}`:s.visited?'':String(i+1)),zIndexOffset:isNext?1000:s.visited?-100:0}).addTo(markerLayer).bindPopup(()=>popup(p),{maxWidth:280});markers.set(p.id,m);});
+      const m=L.marker([p.lat,p.lng],{icon:markIcon(p,isNext?'label':s.visited?'done':'',isNext?`${s.time?s.time+' ':''}${p.name}`:s.visited?'':String(i+1)),zIndexOffset:isNext?1000:s.visited?-100:0}).addTo(markerLayer).bindPopup(()=>popup(p),{maxWidth:280});markers.set(p.id,m);});
     if(line.length>1)L.polyline(d.hotel?[...line,line[0]]:line,{color:cssVar('--route')||'#0e5d5f',weight:4,opacity:.9}).addTo(routeLayer);
     bounds.push(...line);
   }
