@@ -259,6 +259,8 @@ function renderDetail(){const el=$('#detail-body');if(!detailId){el.innerHTML=''
   if(p.desc)h+=`<p class="desc">${esc(p.desc)}</p>`;
   const facts=[p.menus?.length?['주요 메뉴',esc(p.menus.join(' · '))]:null,p.address?['주소',esc(p.address)]:null,p.branchNote?['지점 안내',esc(p.branchNote)]:null,p.coordinateNote?['위치 참고',esc(p.coordinateNote)]:null,p.source?['출처',external(p.source,'주소 출처 ↗')]:null].filter(Boolean);
   if(facts.length)h+=`<dl class="facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>`;
+  const blogs=(globalThis.PLACE_BLOGS||{})[String(p.id)]||[];
+  if(blogs.length)h+=`<section class="blogs"><h3>참고할 만한 글</h3><ul>${blogs.slice(0,3).map(b=>`<li><a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer"><b>${esc(b.title)}</b><small>${esc([b.blog,b.date].filter(Boolean).join(' · '))}</small></a></li>`).join('')}</ul><p>광고·협찬 표기가 있는 글은 뺐어요. 내용은 작성 당시 기준이에요.</p></section>`;
   h+=`<div class="links">${external(google(p),ic('ext')+esc(MAP_LABEL)+'에서 보기')}${located(p)?`<button data-act="map">${ic('map')}지도에서 보기</button>`:''}</div>`;
   const same=catalog.filter(q=>q.id!==p.id&&located(q)&&q.lat===p.lat&&q.lng===p.lng);
   if(near.length)h+=`<div class="near">${same.length?'같은 건물·':''}가까운 후보 · ${near.map(o=>`<button data-open="${esc(o.q.id)}">${esc(o.q.name)}</button> <span class="mono">${esc(kmTxt(o.d))}</span>`).join(' · ')}</div>`;

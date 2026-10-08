@@ -265,6 +265,15 @@ body.no-map .map-tools,body.no-map .map-note{display:none}
 .facts dt{color:var(--mut);font-size:12px;margin-bottom:2px}
 .facts dd{margin:0;overflow-wrap:anywhere}
 .facts a{color:var(--route);font-weight:600}
+.blogs{margin:14px 16px 0}
+.blogs h3{font-size:13px;font-weight:600;color:var(--mut);margin:0 0 4px}
+.blogs ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.blogs li{border-bottom:1px solid var(--line)}
+.blogs a{display:flex;flex-direction:column;gap:2px;min-height:44px;justify-content:center;padding:8px 0;color:var(--ink);text-decoration:none}
+.blogs a b{font-size:14px;font-weight:500;line-height:1.4}
+.blogs a b::after{content:" ↗";color:var(--route)}
+.blogs a small{font-size:12px;color:var(--mut)}
+.blogs p{font-size:11.5px;color:var(--mut);margin:6px 0 0}
 .links{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px 0}
 .links a,.links button{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--sf);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink)}
 .links .ico{width:16px;height:16px}
