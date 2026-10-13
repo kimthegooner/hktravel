@@ -204,7 +204,7 @@ function renderToday(){const t=trip(),d=t.days[current],list=dayStops(),nx=list.
 function dayTabs(){const t=trip();return t.days.map((d,i)=>{const p=dateParts(t.start,i);return `<button data-day="${i}" aria-current="${current===i}" title="${esc(d.title)}"><b>${p?esc(p.dd+' '+p.w):'D'+(i+1)}</b>${esc(daySub(i)||'D'+(i+1))}</button>`;}).join('');}
 function renderPlan(){const t=trip(),d=t.days[current],list=dayStops();
   $('#day-tabs').innerHTML=dayTabs();
-  let h=`<div class="plan-head"><div><h3>${esc(d.title||'D'+(current+1))}</h3><p>${d.hotel?'숙소 '+esc(d.hotel.name)+' · ':''}${list.length}곳 · ${list.filter(x=>x.s.visited).length}곳 다녀옴</p></div><button class="text-btn" id="day-edit">숙소·날짜 설정</button></div><ol class="plist">`;
+  let h=`<div class="plan-head"><div><h3>${esc(d.title||'D'+(current+1))}</h3><p>${d.hotel?'숙소 '+esc(d.hotel.name)+' · ':''}${list.length}곳 · ${list.filter(x=>x.s.visited).length}곳 다녀옴</p></div><button class="text-btn" id="day-edit">숙소·날짜 설정</button></div>${C.dayNotes?.[current]?`<div class="day-note">${C.dayNotes[current]}</div>`:''}<ol class="plist">`;
   h+=`<li class="hotel-row-wrap"><div class="hotel-row"><span class="h">⌂</span><span>${esc(d.hotel?.name||'숙소를 정해 주세요')}<small>출발</small></span><button class="text-btn" id="hotel-edit">변경</button></div></li>`;
   list.forEach(({s,p},i)=>{const prev=i?list[i-1].p:d.hotel,open=openRow===s.id;
     h+=`<li class="${s.visited?'visited':''}${open?' open':''}${detailId===s.id?' sel':''}" data-id="${esc(s.id)}"><div class="prow" data-row>

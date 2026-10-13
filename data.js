@@ -1025,3 +1025,12 @@ globalThis.YOONHWAN_RESTAURANTS=[
     "coordinateNote": "핀은 홍콩 정부 주소 조회의 건물 위치 기준입니다. 정확한 매장 입구는 구글지도에서 확인하세요."
   }
 ];
+
+// Day별 이동 안내 메모 (내 일정 화면의 숙소 카드 아래 표시)
+globalThis.TRAVEL_CONFIG=Object.assign(globalThis.TRAVEL_CONFIG||{},{dayNotes:{
+  0:'<b>✈️ 공항 → 숙소 (10:55 HKG 도착)</b><ul>'+
+    '<li><b>A21 버스 (추천)</b> — 입국장 → 버스터미널 탑승 · 옥토퍼스 HK$36 · 60~70분 · <b>Middle Road 하차 → 도보 3분</b> · 예약 불필요, 10~20분 간격 수시 운행</li>'+
+    '<li><b>공항철도(AEL)</b> — 구룡역까지 24분 HK$105 → 무료셔틀 K2 또는 택시 약 HK$50</li>'+
+    '<li><b>택시</b> — HK$280~330 + 짐 개당 HK$6 · 35~45분 · 레드 택시(구룡 방면) 줄</li>'+
+    '</ul>체크인(14:00) 전이면 짐만 맡기고 도보 3분 스타페리부터 시작!'
+}});
