@@ -9,6 +9,7 @@ const I={
   ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/>',grip:'<path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01"/>',
   undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',expand:'<path d="M4 9V4h5M20 15v5h-5M4 4l6 6M20 20l-6-6"/>',
   train:'<rect x="5" y="3" width="14" height="13" rx="3"/><path d="M5 10h14M8 20l-2 2M16 20l2 2M9 13h.01M15 13h.01"/>',
+  tram:'<rect x="6" y="4" width="12" height="14" rx="2"/><path d="M6 9h12M6 13h12M9 21h6M12 18v3M12 1v3"/>',
   food:'<path d="M5 3v6a3 3 0 0 0 6 0V3M8 3v18M18 3c-2 2-3 5-3 9h4V3h-1ZM19 12v9"/>',photo:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-9 7"/>'
 };
 const ic=n=>`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${I[n]||''}</svg>`;
@@ -35,7 +36,7 @@ const TODAY=(()=>{const q=QS.get('today');if(/^\d{4}-\d{2}-\d{2}$/.test(q||''))r
 const nowText=()=>{const q=QS.get('now');if(/^([01]\d|2[0-3]):[0-5]\d$/.test(q||''))return q;const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes());};
 
 let db={version:2,active:'',trips:[]},current=0,pickDay=0,tab='today',detailId=null,filter='전체',friend='all',recOnly=false,query='',undo=[],showDone=false,openRow=null,findOpen=false,myPos=null,
-  map,markerLayer,routeLayer,transitLayer,locationLayer,markers=new Map(),transit=false,toastTimer,view={days:{},pick:{},sheet:{}},sheetState={};
+  map,markerLayer,routeLayer,transitLayer,tramLayer,locationLayer,markers=new Map(),transit=false,tramOn=false,toastTimer,view={days:{},pick:{},sheet:{}},sheetState={};
 const isPC=()=>matchMedia('(min-width:901px)').matches;
 
 /* ── 저장 ── */
@@ -112,6 +113,8 @@ function initMap(){if(!window.L){$('#map-fallback').hidden=false;document.body.c
   markerLayer=L.layerGroup().addTo(map);routeLayer=L.layerGroup().addTo(map);transitLayer=L.layerGroup();locationLayer=L.layerGroup().addTo(map);
   Object.values(mtrLines).forEach(line=>{L.polyline(line.stations.map(s=>[s.lat,s.lng]),{color:line.color,weight:4,opacity:.45}).addTo(transitLayer);line.stations.forEach(s=>L.circleMarker([s.lat,s.lng],{radius:3,color:line.color,fillColor:'#fff',fillOpacity:1,weight:2}).bindTooltip(esc(s.name)).addTo(transitLayer));});
   [ferryRoute,macauFerryRoute].filter(p=>p.length).forEach(p=>L.polyline(p,{color:'#569caa',weight:3,dashArray:'7 7'}).bindTooltip('페리 항로 참고').addTo(transitLayer));
+  tramLayer=L.layerGroup();
+  if(tramRoute.stops.length){L.polyline(tramRoute.stops.map(s=>[s.lat,s.lng]),{color:tramRoute.color,weight:5,opacity:.6}).bindTooltip('딩딩트램 본선 — 아무 정류장에서나 타세요 (200~300m 간격)').addTo(tramLayer);tramRoute.stops.forEach(s=>L.circleMarker([s.lat,s.lng],{radius:4,color:tramRoute.color,fillColor:'#fff',fillOpacity:1,weight:2}).bindTooltip(esc(s.name)).addTo(tramLayer));}
   new ResizeObserver(()=>map.invalidateSize()).observe($('#map-panel'));
   map.on('zoomend moveend resize',layoutFoodLabels);
 }
@@ -397,6 +400,7 @@ $('#new-trip').onclick=newTrip;$('#settings-btn').onclick=settings;$('#share-btn
 $('#close-dialog').onclick=close;$('#editor').onclick=e=>{if(e.target===$('#editor')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();}};
 $('#fit-btn').onclick=()=>{if(!map)return toast('지도를 먼저 불러와 주세요.');detailId?closeDetail():null;drawMap(true);};
 $('#transit-btn').onclick=()=>{if(!map)return toast('지도를 먼저 불러와 주세요.');transit=!transit;if(transit)transitLayer.addTo(map);else map.removeLayer(transitLayer);$('#transit-btn').setAttribute('aria-pressed',transit);$('#transit-btn').setAttribute('aria-label',transit?'노선 숨기기':'노선 보기');};
+$('#tram-btn').onclick=()=>{if(!map)return toast('지도를 먼저 불러와 주세요.');tramOn=!tramOn;if(tramOn){tramLayer.addTo(map);map.fitBounds(tramRoute.stops.map(s=>[s.lat,s.lng]),{padding:[40,40]});}else map.removeLayer(tramLayer);$('#tram-btn').setAttribute('aria-pressed',tramOn);$('#tram-btn').setAttribute('aria-label',tramOn?'딩딩트램 노선 숨기기':'딩딩트램 노선 보기');};
 $('#location-btn').onclick=()=>{if(!map)return toast('지도를 먼저 불러와 주세요.');locate(true);};
 $('.brand').onclick=e=>{e.preventDefault();detailId=null;setTab(todayIdx()>=0?'today':'plan');};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&detailId&&!$('#editor').open)closeDetail();});
@@ -406,6 +410,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>drawM
 
 $$('[data-ico]').forEach(el=>el.insertAdjacentHTML('afterbegin',ic(el.dataset.ico)));
 if(!Object.keys(mtrLines).length&&!ferryRoute.length)$('#transit-btn').hidden=true;
+if(!tramRoute.stops.length)$('#tram-btn').hidden=true;
 initState();initMap();setupSheetDrag();setupPlanDrag();render(true);
 if(map)setTimeout(()=>{map.invalidateSize();drawMap(true);},60);
 // 위치 권한을 이미 준 기기에서만 조용히 위치를 읽는다(처음부터 권한을 묻지 않는다).

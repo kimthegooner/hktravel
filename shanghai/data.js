@@ -71,3 +71,4 @@ globalThis.TRAVEL_CONFIG={city:'shanghai',cityLabel:'상하이',tripName:'상하
  if(a){const origin=gaodePoint(a);params.set('from',origin.join(',')+','+(a.englishName||a.name));}
  return 'https://uri.amap.com/navigation?'+params;
 }};
+const tramRoute={stops:[]};
