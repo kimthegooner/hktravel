@@ -1101,8 +1101,8 @@ globalThis.TRAVEL_CONFIG=Object.assign(globalThis.TRAVEL_CONFIG||{},{initialDays
     {id:'3',time:'14:25',duration:30,note:'소호 골목 구경',mode:'walking'},
     {id:'5',time:'15:00',duration:80,note:'전시+카페 휴식. 16:20 퇴장 → 하버프론트 도보 15분+여유시간 산책 후 버스',mode:'walking'},
     {id:'99',time:'17:35',duration:55,note:'해질녘 탑승! 일몰(17:52)을 2층에서 — 한 바퀴 돌고 15번 정류장(세인트존스/가든로드)에서 18:30쯤 하차',mode:'walking'},
-    {id:'7',time:'18:35',duration:55,note:'가든로드에서 도보 7분 — 저녁식사 (소호 쪽도 OK). 19:30 택시 탑승',mode:'walking'},
-    {id:'1',time:'19:40',duration:50,note:'택시 10분(HK$60~70) 등정. 무료 야경: ①피크 갤러리아 3층 옥상 데크(북쪽 난간, ~22시) ②라이온스 파빌리온. 20:35 택시 하산 → 가든로드 15번 정류장 H2K 재탑승 → 침사추이 스타페리 하차',mode:'driving'},
+    {id:'2',time:'18:35',duration:45,note:'H2K 15번 하차 지점이 바로 하부역! 토요일 저녁 상행 대기 30분+ 가능 — 온라인 티켓 미리 사서 매표 줄 스킵. 45도 트램 체험은 상행이 백미',mode:'walking'},
+    {id:'1',time:'19:20',duration:100,note:'피자 저녁(갤러리아: Wildfire 1층 102-103 · Falcone · Peak Pizza G08) 60분 → 야경 40분(갤러리아 3층 옥상 데크·라이온스 파빌리온, 무료). 21:00 택시 하산(하행 트램 줄 회피, HK$60~70) → 가든로드 15번에서 H2K 재탑승(~22:30 운행) → 침사추이 스타페리 하차',mode:'walking'},
   ],
   [ // D3 10/25 일 — 마카오 이동·댄싱워터
     {id:'heesu-yat',time:'11:15',duration:65,note:'★예약 추천★ 10:45 체크아웃 → MTR 1정거장 조던, 이튼호텔 B2. 희수 강추 딤섬으로 홍콩 마무리 — 12:25 MTR로 셩완 이동(20분), 13:30 페리',mode:'transit'},
