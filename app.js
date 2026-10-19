@@ -60,7 +60,7 @@ function initState(){
     db.trips=raw.trips.flatMap(t=>{try{return [Planner.normalize(t,catalog)];}catch{return [];}});db.active=raw.active;
   }}catch{toast('저장 데이터를 읽지 못했어요. 백업 파일이 있으면 복원해 주세요.');}
   if(!db.trips.length){let t;try{const old=C.city?null:JSON.parse(localStorage.getItem('hkmo_planner_v1'));if(old?.assignment)t=Planner.legacy(old,catalog);}catch{}
-    if(!t){t=Planner.fresh();if(C.initialStops){C.initialStops.forEach((ids,i)=>t.days[i].stops=ids.map(id=>({id})));}else{t.days[0].stops=['9','2','1','10'].map(id=>({id}));t.days[2].stops=['28','27','35'].map(id=>({id}));}t=Planner.normalize(t,catalog);}db.trips=[t];db.active=t.id;
+    if(!t){t=Planner.fresh();if(C.initialDays){C.initialDays.forEach((stops,i)=>{if(t.days[i])t.days[i].stops=stops.map(s=>({...s}));});}else if(C.initialStops){C.initialStops.forEach((ids,i)=>t.days[i].stops=ids.map(id=>({id})));}else{t.days[0].stops=['9','2','1','10'].map(id=>({id}));t.days[2].stops=['28','27','35'].map(id=>({id}));}t=Planner.normalize(t,catalog);}db.trips=[t];db.active=t.id;
   }
   if(!db.trips.some(t=>t.id===db.active))db.active=db.trips[0].id;
   importHash();save();loadView();pickStartDay();

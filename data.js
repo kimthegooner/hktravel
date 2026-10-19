@@ -349,6 +349,14 @@ const BASE_SPOTS = [
   { id:94, name:"학사 해변", lat:22.1213, lng:113.5710, color:"#16a085", must:false,
     desc:"검은 모래로 이름난 콜로안 해변. 해질녘 산책하기 좋음. 콜로안 마을과 묶기",
     tags:["버스","해변","아이★★★"], img:F("Hac Sa Beach and Grand Coloane Resort Macau 10-02-2023.jpg") },
+
+  // ── 확정 일정용 추가 장소 ──
+  { id:98, name:"원딤섬 본점 (프린스에드워드)", lat:22.3242, lng:114.1701, color:"#3498db", must:false,
+    desc:"미쉐린 받았던 딤섬 본점. 금붕어시장 같은 거리라 저녁+몽콕 코스 연결에 딱. 주소: 209A-209B Tung Choi St",
+    tags:["먹거리","딤섬","몽콕"], img:null },
+  { id:99, name:"H2K 나이트투어 (오픈탑 버스)", lat:22.2853, lng:114.1622, color:"#8e44ad", must:false,
+    desc:"시티버스 夜賞香港. 매일 17:05~22:30, 배차 30분. 센트럴 스타페리/대관람차(1번 정류장) 출발 — 나이트패스 자유 승하차, 15번 정류장이 가든로드 피크트램 하부역",
+    tags:["야경","예약완료","자유승하차"], img:null },
 ];
 
 
@@ -1071,3 +1079,41 @@ const tramRoute = { color:"#2e7d32", stops:[
   {name:"쿼리베이 — 몬스터빌딩",lat:22.2879,lng:114.2095},
   {name:"샤우케이완 (동쪽 종점)",lat:22.2793,lng:114.2288},
 ]};
+
+// 확정 일정 (새 기기/초기화 시 기본값으로 로드 — 2026-10-19 박제)
+globalThis.TRAVEL_CONFIG=Object.assign(globalThis.TRAVEL_CONFIG||{},{initialDays:[
+  [ // D1 10/23 금 — 도착·구룡
+    {id:'12',time:'13:45',duration:85,note:'짐 맡기고 바로 — 점심+쇼핑 (몰 안 식당 많음)',mode:'walking'},
+    {id:'40',time:'15:25',duration:70,note:'하버시티 북쪽 출구에서 도보 15분/택시 5분. 미술관+아트파크 하버뷰',mode:'walking'},
+    {id:'16',time:'17:00',duration:30,note:'MTR 오스틴→남청 환승 프린스에드워드 (20분) — 금붕어 봉지 구경',mode:'transit'},
+    {id:'15',time:'17:35',duration:40,note:'퉁초이 스트리트 따라 내려가며 — 흥정 필수',mode:'walking'},
+    {id:'98',time:'18:20',duration:60,note:'다시 거리 북단으로 — 저녁 딤섬 (19:25엔 출발해야 심포니 OK)',mode:'walking'},
+    {id:'10',time:'19:45',duration:40,note:'MTR로 복귀 → 20:00 심포니 오브 라이츠 — 숙소 도보 3분',mode:'transit'},
+    {id:'17',time:'20:40',duration:60,note:'심포니 끝나고 MTR 조던 1정거장(도보도 15분) — 야식으로 하루 마무리',mode:'transit'},
+  ],
+  [ // D2 10/24 토 — 홍콩섬·피크
+    {id:'59',time:'10:00',duration:60,note:'토요일 10시 개관 (숙소 길 건너) — 스페이스시어터 상영표 먼저. 관람 후 바로 앞 해변이 스타의 거리',mode:'walking'},
+    {id:'61',time:'11:20',duration:15,note:'스타의 거리 동쪽 뷰 보고 서쪽으로 해변 산책(20분) → 길 건너 1881 포토 스팟',mode:'walking'},
+    {id:'11',time:'11:35',duration:10,note:'시계탑 한 바퀴 — 바로 옆 선착장에서 11:45 스타페리(12분) 타고 센트럴',mode:'walking'},
+    {id:'heesu-basehall',time:'12:10',duration:60,note:'스타페리 12분+도보 5분. 희수 추천 코코넛 락사',mode:'transit'},
+    {id:'39',time:'13:20',duration:20,note:'BaseHall 나와 남쪽 한 블록 데뵈로드 — 서행(Kennedy Town 방면) 탑승, 트램이 곧 만모사원행',mode:'walking'},
+    {id:'4',time:'13:45',duration:30,note:'Western Market 하차 → 오르막 도보 8분',mode:'walking'},
+    {id:'3',time:'14:25',duration:30,note:'소호 골목 구경',mode:'walking'},
+    {id:'5',time:'15:00',duration:80,note:'전시+카페 휴식. 16:20 퇴장 → 하버프론트 도보 15분+여유시간 산책 후 버스',mode:'walking'},
+    {id:'99',time:'17:35',duration:55,note:'해질녘 탑승! 일몰(17:52)을 2층에서 — 한 바퀴 돌고 15번 정류장(세인트존스/가든로드)에서 18:30쯤 하차',mode:'walking'},
+    {id:'7',time:'18:35',duration:55,note:'가든로드에서 도보 7분 — 저녁식사 (소호 쪽도 OK). 19:30 택시 탑승',mode:'walking'},
+    {id:'1',time:'19:40',duration:50,note:'택시 10분(HK$60~70) 등정. 무료 야경: ①피크 갤러리아 3층 옥상 데크(북쪽 난간, ~22시) ②라이온스 파빌리온. 20:35 택시 하산 → 가든로드 15번 정류장 H2K 재탑승 → 침사추이 스타페리 하차',mode:'driving'},
+  ],
+  [ // D3 10/25 일 — 마카오 이동·댄싱워터
+    {id:'heesu-yat',time:'11:15',duration:65,note:'★예약 추천★ 10:45 체크아웃 → MTR 1정거장 조던, 이튼호텔 B2. 희수 강추 딤섬으로 홍콩 마무리 — 12:25 MTR로 셩완 이동(20분), 13:30 페리',mode:'transit'},
+    {id:'46',time:'16:30',duration:80,note:'★16:30 예약★ 13:30 셩완발 코타이워터젯(타이파행, 여권!) → 14:35 타이파 → 갤럭시 무료셔틀 → 15:30 브로드웨이 체크인 → 16:00 공연장 입장',mode:'transit'},
+    {id:'95',time:'19:00',duration:25,note:'공연 후 저녁 먹고 — CoD에서 도보 10분, 더 스펙터클 로비 19시 회차',mode:'walking'},
+    {id:'96',time:'19:30',duration:25,note:'MGM 길 건너 런더너 로비 — 드론쇼 끝나고 바로',mode:'walking'},
+    {id:'35',time:'20:00',duration:60,note:'교대식 끝나고 연결 — 운하+곤돌라 몰 야간 구경 후 셔틀/도보 숙소 복귀',mode:'walking'},
+  ],
+  [ // D4 10/26 월 — 마카오 반도 (시간표 미정)
+    {id:'27',time:'',duration:0,note:'',mode:'transit'},
+    {id:'28',time:'',duration:0,note:'',mode:'transit'},
+  ],
+  [],
+]});
